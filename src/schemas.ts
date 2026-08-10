@@ -5,8 +5,10 @@
 import { z } from 'zod';
 import type {
   AppContext,
+  AssignToThemePayload,
   Edition,
   OutboxItem,
+  ParkItemPayload,
   Position,
   ReadingItem,
   SourceSuggestion,
@@ -261,6 +263,40 @@ export const outboxRowSchema = z
       createdAt: r.created_at ?? '',
     }),
   );
+
+// Outbox payload contract, per kind. manifold consumes these shapes, so they
+// are exported alongside the types (src/types.ts ParkItemPayload,
+// AssignToThemePayload). Payload keys are camelCase like every existing
+// outbox payload the app emits.
+
+export const parkItemPayloadSchema: z.ZodType<ParkItemPayload, z.ZodTypeDef, unknown> = z.object({
+  itemId: z.string().min(1),
+  source: z.string().nullable(),
+  title: z.string().min(1),
+  url: z.string().nullable(),
+});
+
+export const assignToThemePayloadSchema: z.ZodType<AssignToThemePayload, z.ZodTypeDef, unknown> =
+  z.union([
+    z.object({ itemId: z.string().min(1), themeId: z.string().min(1) }),
+    z.object({ itemId: z.string().min(1), newThemeLabel: z.string().trim().min(1) }),
+  ]);
+
+/** Writer-side gate: kinds with a declared payload contract must match it
+ * before the row goes out. Kinds without a declared schema pass through
+ * (their payloads are advisory). Returns null when valid, or the first
+ * validation issue for the caller to log. */
+export function validateOutboxPayload(kind: string, payload: Record<string, unknown>): string | null {
+  const schema =
+    kind === 'assign-to-theme'
+      ? assignToThemePayloadSchema
+      : kind === 'park' && 'itemId' in payload
+        ? parkItemPayloadSchema
+        : null;
+  if (!schema) return null;
+  const parsed = schema.safeParse(payload);
+  return parsed.success ? null : (parsed.error.issues[0]?.message ?? 'invalid payload');
+}
 
 // ---------------------------------------------------------- reading items
 

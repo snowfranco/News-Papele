@@ -811,3 +811,369 @@ button {
     padding: 10px 14px;
   }
 }
+
+/* ----------------------------------------------------------- feeds tab */
+/* The workshop bench: a source rail beside a raw chronological list.
+   Counts are inventory, never pressure. */
+
+.sp-fdgrid {
+  display: grid;
+  /* minmax(0, …): the list column must shrink below its content's intrinsic
+     width or the whole page scrolls horizontally. */
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.sp-fdrail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: sticky;
+  top: 12px;
+}
+
+.sp-fdrailitem {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 6px 8px;
+  cursor: pointer;
+  min-height: 30px;
+}
+
+.sp-fdrailitem:hover {
+  border-color: var(--rule);
+}
+
+.sp-fdrailitem.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.sp-fdchip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.sp-fdname {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sp-fdrailitem.off .sp-fdname {
+  color: var(--muted);
+}
+
+.sp-fdrailitem.on .sp-fdname {
+  color: inherit;
+}
+
+.sp-fdcount {
+  font-size: 10px;
+  color: inherit;
+  opacity: 0.62;
+}
+
+.sp-fdoff {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sp-fdsub {
+  flex-basis: 100%;
+  font-size: 10px;
+  color: var(--muted);
+  padding-left: 15px;
+}
+
+.sp-fdrailitem.on .sp-fdsub,
+.sp-fdrailitem.on .sp-fdoff {
+  color: inherit;
+  opacity: 0.62;
+}
+
+.sp-fdctl {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.sp-fdctl .sp-input {
+  flex: 1 1 170px;
+  width: auto;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.sp-fdseg button {
+  font-size: 11px;
+  padding: 5px 9px;
+  min-height: 30px;
+}
+
+.sp-fdstamp {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.sp-fdday {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: lowercase;
+  color: var(--cobalt);
+  border-bottom: 1px solid var(--rule);
+  padding: 16px 2px 4px;
+}
+
+.sp-fdrow {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.sp-fdmain {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sp-fdtitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a.sp-fdtitle:hover {
+  color: var(--cobalt);
+}
+
+.sp-fdmeta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink2);
+  margin-top: 3px;
+}
+
+.sp-fdsnip {
+  margin: 3px 0 0;
+  font-size: 14px;
+  color: var(--ink2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sp-fdrow.read .sp-fdtitle {
+  color: var(--ink2);
+}
+
+.sp-fdrow.read .sp-fdmeta,
+.sp-fdrow.read .sp-fdsnip {
+  color: var(--muted);
+}
+
+.sp-fdacts {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+  flex: none;
+}
+
+.sp-fdpill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  color: var(--ink2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 4px 8px;
+  min-height: 26px;
+  cursor: pointer;
+}
+
+.sp-fdpill:hover {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
+
+.sp-fdpill.read {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.sp-fdpill.read:hover {
+  border-color: var(--ink);
+  color: var(--bg);
+  opacity: 0.88;
+}
+
+.sp-fdmenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 12;
+  min-width: 230px;
+  max-width: min(320px, 90vw);
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(33, 28, 21, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-fdmenuitem {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-align: left;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.sp-fdmenuitem:hover {
+  background: var(--card);
+  color: var(--cobalt);
+}
+
+.sp-fdmenuitem.new {
+  color: var(--cobalt);
+}
+
+.sp-fdmenuitem.new:not(:first-child) {
+  border-top: 1px solid var(--rule);
+  border-radius: 0 0 2px 2px;
+  margin-top: 3px;
+  padding-top: 8px;
+}
+
+.sp-fdnew {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 3px;
+}
+
+.sp-fdnew .sp-input {
+  font-size: 14px;
+  padding: 7px 9px;
+}
+
+.sp-fdquiet {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.sp-fdnone {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink2);
+  padding: 16px 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sp-fdrailitem,
+  .sp-fdpill,
+  .sp-fdmenuitem,
+  a.sp-fdtitle {
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+}
+
+@media (max-width: 640px) {
+  .sp-fdgrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .sp-fdrail {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
+  .sp-fdrailitem {
+    flex: none;
+    width: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    border-color: var(--rule);
+  }
+
+  .sp-fdrailitem.on {
+    border-color: var(--ink);
+  }
+
+  .sp-fdsub {
+    display: none;
+  }
+
+  .sp-fdrow {
+    flex-direction: column;
+    /* stretch: in column direction the nowrap meta/snippet must be width-
+       constrained by the row, or they push the page into horizontal scroll */
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .sp-fdacts {
+    justify-content: flex-start;
+  }
+
+  .sp-fdmenu {
+    right: auto;
+    left: 0;
+  }
+}

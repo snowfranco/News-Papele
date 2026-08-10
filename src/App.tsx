@@ -8,6 +8,7 @@ import { SourceManager } from './components/SourceManager';
 import { Toast } from './components/Toast';
 import { useStore } from './state/AppStore';
 import { EditionView } from './views/EditionView';
+import { FeedsView } from './views/FeedsView';
 import { PositionDeskView } from './views/PositionDeskView';
 import { ThemeMapView } from './views/ThemeMapView';
 
@@ -56,6 +57,7 @@ export default function App() {
             {view === 'edition' && <EditionView />}
             {view === 'map' && <ThemeMapView />}
             {view === 'desk' && <PositionDeskView />}
+            {view === 'feeds' && <FeedsView />}
           </>
         )}
       </div>

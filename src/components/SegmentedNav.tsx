@@ -5,6 +5,7 @@ const VIEWS: [ViewKey, string][] = [
   ['edition', 'Edition'],
   ['map', 'Theme map'],
   ['desk', 'Position desk'],
+  ['feeds', 'Feeds'],
 ];
 
 export function SegmentedNav({

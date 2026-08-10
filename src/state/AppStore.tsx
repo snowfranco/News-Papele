@@ -13,6 +13,7 @@ import {
 } from 'react';
 import * as db from '../data/dataLayer';
 import { SupabaseError } from '../data/supabaseClient';
+import { validateOutboxPayload } from '../schemas';
 import { buildDemoData, isDemoMode } from '../lib/demo';
 import { fetchFeed } from '../lib/feeds';
 import { markLegacyMigrated, migrateLegacySources } from '../lib/migrate';
@@ -69,8 +70,17 @@ export interface AppStore {
   }) => Promise<Position | null>;
   publishPosition: (id: string) => Promise<boolean>;
   saveSources: (sources: Sources, projects?: Project[], orgContext?: string | null) => Promise<boolean>;
+  /** Set an item's read state; optimistic, round-trips through
+   * article_read_states so every view reflects it. */
+  setRead: (itemId: string, read: boolean) => void;
+  /** Convenience for the common one-way case. */
   markRead: (itemId: string) => void;
   projectById: (id: string | null | undefined) => Project | undefined;
+  /** Re-run the feed fetch chain for one source (by feed id) or all sources.
+   * Timestamps land in lastRefresh keyed by feed id, plus 'all'. */
+  refreshSources: (sourceId?: string) => Promise<void>;
+  refreshing: boolean;
+  lastRefresh: Record<string, string>;
 }
 
 const StoreContext = createContext<AppStore | null>(null);
@@ -79,6 +89,21 @@ export function useStore(): AppStore {
   const store = useContext(StoreContext);
   if (!store) throw new Error('useStore outside <StoreProvider>');
   return store;
+}
+
+const VIEW_KEYS: ViewKey[] = ['edition', 'map', 'desk', 'feeds'];
+
+/** Deep link: ?view=feeds (etc). Unknown values fall back to the edition. */
+function initialView(): ViewKey {
+  const v = new URLSearchParams(window.location.search).get('view');
+  return VIEW_KEYS.includes(v as ViewKey) ? (v as ViewKey) : 'edition';
+}
+
+function writeViewToUrl(v: ViewKey): void {
+  const url = new URL(window.location.href);
+  if (v === 'edition') url.searchParams.delete('view');
+  else url.searchParams.set('view', v);
+  window.history.replaceState(null, '', url);
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -94,12 +119,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [degraded, setDegraded] = useState<string[]>([]);
   const [unreachable, setUnreachable] = useState<string[]>([]);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
-  const [view, setView] = useState<ViewKey>('edition');
+  const [view, setViewState] = useState<ViewKey>(initialView);
   const [focusThemeId, setFocusThemeId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Record<string, string>>({});
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bootRan = useRef(false);
+  // Mirrors for callbacks that must read current state without re-binding.
+  const contextRef = useRef<AppContext | null>(null);
+  const readingItemsRef = useRef<ReadingItem[]>([]);
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+  useEffect(() => {
+    readingItemsRef.current = readingItems;
+  }, [readingItems]);
 
   const say = useCallback((msg: string) => {
     setToast(msg);
@@ -107,12 +143,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toastTimer.current = setTimeout(() => setToast(null), 2400);
   }, []);
 
-  /** Fetch every enabled feed, upsert into reading_items (best effort), and
-   * rebuild the seed edition when manifold has not written one. Fetched
-   * articles are kept in memory even when the upsert fails (backend paused
-   * or migration missing) so the cockpit still has fresh material. */
-  const refreshFeeds = useCallback(async (ctx: AppContext | null) => {
-    const feeds = (ctx?.sources.feeds ?? []).filter((f) => f.enabled);
+  /** Fetch enabled feeds (optionally one, by feed id), upsert into
+   * reading_items (best effort), and rebuild the seed edition when manifold
+   * has not written one. Fetched articles are kept in memory even when the
+   * upsert fails (backend paused or migration missing) so the cockpit still
+   * has fresh material. */
+  const refreshFeeds = useCallback(async (ctx: AppContext | null, sourceId?: string) => {
+    const feeds = (ctx?.sources.feeds ?? []).filter(
+      (f) => f.enabled && (sourceId === undefined || f.id === sourceId),
+    );
     if (feeds.length === 0) return;
     const fetched: ReadingItem[] = [];
     let anyUpserted = false;
@@ -155,11 +194,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }),
     );
+    const stamp = new Date().toISOString();
+    setLastRefresh((prev) => {
+      const next = { ...prev };
+      for (const f of feeds) next[f.id] = stamp;
+      if (sourceId === undefined) next.all = stamp;
+      return next;
+    });
     if (fetched.length > 0) {
       const stored = anyUpserted ? await db.getReadingItems() : [];
-      const fresh = stored.length > 0 ? stored : fetched;
-      setReadingItems(fresh);
-      setEdition((current) => (current === null || current.seed ? buildSeedEdition(fresh) : current));
+      if (stored.length > 0) {
+        setReadingItems(stored);
+        setEdition((current) =>
+          current === null || current.seed ? buildSeedEdition(stored) : current,
+        );
+      } else {
+        // Backend unreachable: merge the live fetch into what is already on
+        // screen (a single-source refresh must not blank the other sources).
+        const byId = new Map(readingItemsRef.current.map((i) => [i.id, i]));
+        for (const item of fetched) byId.set(item.id, item);
+        const merged = [...byId.values()];
+        setReadingItems(merged);
+        setEdition((current) =>
+          current === null || current.seed ? buildSeedEdition(merged) : current,
+        );
+      }
     }
   }, []);
 
@@ -176,6 +235,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setThemes(demo.themes);
       setThemeLinks(demo.themeLinks);
       setPositions(demo.positions);
+      setReadingItems(demo.readingItems);
+      setReadStates(demo.readStates);
       setLoading(false);
       return;
     }
@@ -263,8 +324,52 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, [refreshFeeds]);
 
+  const setView = useCallback((v: ViewKey) => {
+    setViewState(v);
+    writeViewToUrl(v);
+  }, []);
+
+  /** Manual refresh from the Feeds tab. Demo mode simulates instantly. */
+  const refreshSources = useCallback(
+    async (sourceId?: string) => {
+      if (isDemoMode()) {
+        const stamp = new Date().toISOString();
+        setLastRefresh((prev) => ({ ...prev, [sourceId ?? 'all']: stamp }));
+        say('demo preview · refresh is simulated');
+        return;
+      }
+      // A refresh that would match nothing must say so, not silently no-op:
+      // the rail lists disabled sources too.
+      const feeds = contextRef.current?.sources.feeds ?? [];
+      const targets = feeds.filter((f) => sourceId === undefined || f.id === sourceId);
+      if (targets.length === 0) {
+        say('nothing to refresh · no sources configured');
+        return;
+      }
+      if (targets.every((f) => !f.enabled)) {
+        say(sourceId ? 'this source is off · enable it in sources' : 'all sources are off');
+        return;
+      }
+      setRefreshing(true);
+      try {
+        await refreshFeeds(contextRef.current, sourceId);
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [refreshFeeds, say],
+  );
+
   const sendToManifold = useCallback(
     async (kind: OutboxKind, label: string, payload: Record<string, unknown> = {}) => {
+      // Writer-side contract gate: kinds with declared payload shapes must
+      // match them before anything is queued (src/schemas.ts).
+      const invalid = validateOutboxPayload(kind, payload);
+      if (invalid) {
+        console.warn(`superlearn: invalid ${kind} payload rejected`, invalid, payload);
+        say('that action had an invalid shape · not sent');
+        return false;
+      }
       const optimistic: OutboxItem = {
         id: `local-${Math.random().toString(36).slice(2)}`,
         kind,
@@ -406,13 +511,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [say, sendToManifold, refreshFeeds],
   );
 
-  const markRead = useCallback((itemId: string) => {
-    setReadStates((prev) => ({ ...prev, [itemId]: true }));
-    if (isDemoMode()) return;
-    db.setReadState(itemId, true).catch((err) =>
-      console.warn('superlearn: read-state write failed', err),
-    );
-  }, []);
+  const setRead = useCallback(
+    (itemId: string, read: boolean) => {
+      const before = readStates[itemId] ?? false;
+      setReadStates((prev) => ({ ...prev, [itemId]: read }));
+      if (isDemoMode()) return;
+      db.setReadState(itemId, read).catch((err) => {
+        // Reconcile: the optimistic flip did not stick.
+        console.warn('superlearn: read-state write failed', err);
+        setReadStates((prev) => ({ ...prev, [itemId]: before }));
+        say('read state not saved · backend unreachable');
+      });
+    },
+    [readStates, say],
+  );
+
+  const markRead = useCallback((itemId: string) => setRead(itemId, true), [setRead]);
 
   const projectById = useCallback(
     (id: string | null | undefined) =>
@@ -444,8 +558,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       recordPosition,
       publishPosition,
       saveSources,
+      setRead,
       markRead,
       projectById,
+      refreshSources,
+      refreshing,
+      lastRefresh,
     }),
     [
       loading,
@@ -468,8 +586,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       recordPosition,
       publishPosition,
       saveSources,
+      setRead,
       markRead,
       projectById,
+      refreshSources,
+      refreshing,
+      lastRefresh,
+      setView,
     ],
   );
 

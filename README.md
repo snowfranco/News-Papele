@@ -13,7 +13,21 @@ Superlearn is a single-surface learning cockpit. The app is the cockpit: one pag
 - **Edition** (src/views/EditionView.tsx): today's front page, with a lede, emerging themes, and a start-here reading list.
 - **Theme map** (src/views/ThemeMapView.tsx): a force-directed map of themes, sized by heat, with relate and project links as lenses.
 - **Position desk** (src/views/PositionDeskView.tsx): where reading becomes a stance, from draft to published column.
+- **Feeds** (src/views/FeedsView.tsx): the raw per-source reader, chronological and unedited, the workshop bench next to the Edition's front page.
 - **Command bar** (src/components/CommandBar.tsx): keyboard-first actions available from every view.
+
+## The Feeds tab
+
+A per-source raw list built from reading_items, grouped by day, newest first: no lede, no framing, just what each source delivered. It is deep-linkable via ?view=feeds (src/state/AppStore.tsx), and reads round-trip through article_read_states, so an item marked read here shows as read on the Edition too (src/data/dataLayer.ts).
+
+### Outbox kinds it emits
+
+Two kinds, whose payload shapes are the contract manifold consumes (src/types.ts, src/schemas.ts):
+
+- **park** with `{ itemId, source, title, url }` (`ParkItemPayload`).
+- **assign-to-theme** with `{ itemId, themeId }` or `{ itemId, newThemeLabel }` (`AssignToThemePayload`). The app never creates themes directly: manifold owns theme creation and reconciles off the outbox.
+
+Every outbox write with a declared payload shape is zod-gated before it leaves the app (src/schemas.ts, `validateOutboxPayload`).
 
 ## Architecture
 

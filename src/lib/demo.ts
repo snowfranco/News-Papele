@@ -2,7 +2,7 @@
 // in-memory preview of a populated cockpit (what the views look like once
 // manifold writes real editions and themes). Nothing here touches Supabase
 // and nothing is persisted. The copy is honest about being a demo.
-import type { AppContext, Edition, Position, Theme, ThemeLink } from '../types';
+import type { AppContext, Edition, Position, ReadingItem, Theme, ThemeLink } from '../types';
 
 export interface DemoData {
   context: AppContext;
@@ -10,6 +10,8 @@ export interface DemoData {
   themes: Theme[];
   themeLinks: ThemeLink[];
   positions: Position[];
+  readingItems: ReadingItem[];
+  readStates: Record<string, boolean>;
 }
 
 export function isDemoMode(): boolean {
@@ -175,5 +177,44 @@ export function buildDemoData(): DemoData {
     },
   ];
 
-  return { context, edition, themes, themeLinks, positions };
+  const hoursAgo = (n: number) => new Date(now.getTime() - n * 3600000).toISOString();
+  const demoItem = (
+    n: number,
+    source: string,
+    title: string,
+    snippet: string,
+    publishedAt: string,
+  ): ReadingItem => ({
+    id: `demo-item-${n}`,
+    type: 'article',
+    title,
+    url: `https://example.com/demo/${n}`,
+    snippet,
+    topics: [],
+    read: false,
+    addedAt: publishedAt,
+    sourceFeed: source,
+    publishedAt,
+    origin: 'feed',
+    imagePreview: null,
+  });
+
+  const readingItems: ReadingItem[] = [
+    demoItem(1, 'a product newsletter', 'Why the eval set outranks the spec', 'The living definition of good moves from the document to the test set.', hoursAgo(2)),
+    demoItem(2, 'an ai engineering blog', 'Context windows are a product decision', 'What you feed the model is a design surface, not plumbing.', hoursAgo(5)),
+    demoItem(3, 'a product newsletter', 'Distribution before product, revisited', 'An audience compounds while a backlog only accrues.', hoursAgo(26)),
+    demoItem(4, 'an ai engineering blog', 'A field guide to agent-to-agent payments', 'Early signal: agents buying from agents, no human in the checkout flow.', hoursAgo(30)),
+    demoItem(5, 'a product newsletter', 'The roadmap is a hypothesis list', 'Treating commitments as bets changes the meeting.', hoursAgo(78)),
+    demoItem(6, 'an ai engineering blog', 'Small local models change the privacy default', 'Capable models on laptops make private-by-default products practical.', hoursAgo(102)),
+  ];
+
+  return {
+    context,
+    edition,
+    themes,
+    themeLinks,
+    positions,
+    readingItems,
+    readStates: { 'demo-item-3': true, 'demo-item-5': true },
+  };
 }

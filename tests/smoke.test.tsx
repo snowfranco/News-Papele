@@ -2,7 +2,7 @@
 // and walks the skeleton end to end — masthead, edition, theme map, position
 // desk, command bar, outbox. Per-view suites arrive in Phase 2.
 import { StrictMode } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../src/App';
 import { StoreProvider } from '../src/state/AppStore';
@@ -158,6 +158,12 @@ const fx = vi.hoisted(() => {
     },
   ];
 
+  // Feed fixtures: two day groups (one item now, two 26 hours ago) across
+  // the two context feeds, so the Feeds tab renders a rail, counts, and
+  // date group headers. i3 arrives read via the read-states fixture.
+  const NOW_ISO = new Date().toISOString();
+  const DAY_AGO_ISO = new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString();
+
   const readingItems: ReadingItem[] = [
     {
       id: 'i1',
@@ -167,15 +173,45 @@ const fx = vi.hoisted(() => {
       snippet: 'How context budgets shape agent design.',
       topics: ['ai craft'],
       read: false,
-      addedAt: '2026-08-04T06:00:00.000Z',
+      addedAt: NOW_ISO,
       sourceFeed: 'signal review',
-      publishedAt: '2026-08-04T05:00:00.000Z',
+      publishedAt: NOW_ISO,
+      origin: 'feed',
+      imagePreview: null,
+    },
+    {
+      id: 'i2',
+      type: 'article',
+      title: 'Latency budgets for retrieval pipelines',
+      url: 'https://example.com/c',
+      snippet: 'Where the milliseconds actually go.',
+      topics: ['craft'],
+      read: false,
+      addedAt: DAY_AGO_ISO,
+      sourceFeed: 'signal review',
+      publishedAt: DAY_AGO_ISO,
+      origin: 'feed',
+      imagePreview: null,
+    },
+    {
+      id: 'i3',
+      type: 'article',
+      title: 'The quiet rise of on-device inference',
+      url: 'https://example.com/d',
+      snippet: 'Small models moving onto the edge.',
+      topics: ['strategy'],
+      read: false,
+      addedAt: DAY_AGO_ISO,
+      sourceFeed: 'systems weekly',
+      publishedAt: DAY_AGO_ISO,
       origin: 'feed',
       imagePreview: null,
     },
   ];
 
-  return { context, edition, themes, themeLinks, positions, readingItems };
+  const readStates: Record<string, boolean> = { i3: true };
+
+  return { context, edition, themes, themeLinks, positions, readingItems, readStates };
 });
 
 vi.mock('../src/data/dataLayer', () => ({
@@ -202,7 +238,7 @@ vi.mock('../src/data/dataLayer', () => ({
   ),
   getReadingItems: vi.fn(async () => fx.readingItems),
   upsertFeedItems: vi.fn(async () => undefined),
-  getReadStates: vi.fn(async (): Promise<Record<string, boolean>> => ({})),
+  getReadStates: vi.fn(async (): Promise<Record<string, boolean>> => fx.readStates),
   setReadState: vi.fn(async () => undefined),
   getLegacyUserFeeds: vi.fn(async () => []),
   insertPosition: vi.fn(
@@ -229,6 +265,14 @@ vi.mock('../src/lib/feeds', () => ({
 }));
 
 const LEDE_TITLE = 'Context engineering is quietly becoming the whole job';
+
+// The store now writes ?view=… to the URL on every tab switch
+// (deep-link support) and tests in this file share one happy-dom window,
+// so each test must boot from a clean URL or it inherits the previous
+// test's view.
+beforeEach(() => {
+  window.history.replaceState(null, '', '/');
+});
 
 function renderApp() {
   render(
@@ -312,5 +356,151 @@ describe('superlearn cockpit smoke', () => {
     // for the old product name.
     expect(everything).not.toMatch(new RegExp(['pa', 'pele'].join(''), 'i'));
     expect(everything).not.toMatch(/\d+\s+unread/i);
+  });
+});
+
+// ---------------------------------------------------------------- feeds tab
+
+const ROW_TODAY = 'A field guide to context windows'; // i1 · signal review · now
+const ROW_OLDER = 'Latency budgets for retrieval pipelines'; // i2 · signal review · 26h ago
+const ROW_OTHER = 'The quiet rise of on-device inference'; // i3 · systems weekly · 26h ago · read
+
+describe('feeds bench', () => {
+  /** Boot the cockpit, then walk to the Feeds tab and wait for the rail. */
+  async function openFeeds() {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+    await userEvent.click(screen.getByRole('tab', { name: 'Feeds' }));
+    await screen.findByRole('navigation', { name: 'sources' });
+  }
+
+  function rail() {
+    return within(screen.getByRole('navigation', { name: 'sources' }));
+  }
+
+  it('shows the source rail with counts and day group headers', async () => {
+    await openFeeds();
+
+    // "All sources" plus one entry per configured feed, each with its
+    // inventory count (counts are inventory, never pressure).
+    const allBtn = rail().getByRole('button', { name: /All sources/ });
+    expect(within(allBtn).getByText('3')).toBeInTheDocument();
+    const signalBtn = rail().getByRole('button', { name: /signal review/ });
+    expect(within(signalBtn).getByText('2')).toBeInTheDocument();
+    const systemsBtn = rail().getByRole('button', { name: /systems weekly/ });
+    expect(within(systemsBtn).getByText('1')).toBeInTheDocument();
+
+    // Chronological bench: the fixture spans two day groups.
+    expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(document.querySelectorAll('.sp-fdday').length).toBeGreaterThanOrEqual(2);
+    expect(await screen.findByRole('article', { name: ROW_TODAY })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: ROW_OTHER })).toBeInTheDocument();
+  });
+
+  it('filters rows by source and restores on "All sources"', async () => {
+    await openFeeds();
+
+    await userEvent.click(rail().getByRole('button', { name: /systems weekly/ }));
+    expect(await screen.findByRole('article', { name: ROW_OTHER })).toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: ROW_TODAY })).not.toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: ROW_OLDER })).not.toBeInTheDocument();
+
+    await userEvent.click(rail().getByRole('button', { name: /All sources/ }));
+    expect(await screen.findByRole('article', { name: ROW_TODAY })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: ROW_OTHER })).toBeInTheDocument();
+  });
+
+  it('round-trips the read pill through setReadState', async () => {
+    await openFeeds();
+
+    // i3 arrives already read via the read-states fixture.
+    const readRow = screen.getByRole('article', { name: ROW_OTHER });
+    expect(within(readRow).getByRole('button', { name: 'read' })).toBeInTheDocument();
+
+    const row = screen.getByRole('article', { name: ROW_TODAY });
+    await userEvent.click(within(row).getByRole('button', { name: 'unread' }));
+    expect(db.setReadState).toHaveBeenCalledWith('i1', true);
+    // The optimistic flip shows immediately.
+    expect(within(row).getByRole('button', { name: 'read' })).toBeInTheDocument();
+  });
+
+  it('parks an item to manifold with the full item payload', async () => {
+    await openFeeds();
+
+    const row = screen.getByRole('article', { name: ROW_TODAY });
+    await userEvent.click(within(row).getByRole('button', { name: 'Park' }));
+    expect(db.queueOutbox).toHaveBeenCalledWith('park', ROW_TODAY, {
+      itemId: 'i1',
+      source: 'signal review',
+      title: ROW_TODAY,
+      url: 'https://example.com/a',
+    });
+  });
+
+  it('assigns an item to an existing theme and to a new one via the outbox', async () => {
+    await openFeeds();
+
+    // Existing theme: the menu lists every charted theme label.
+    const row = screen.getByRole('article', { name: ROW_TODAY });
+    await userEvent.click(within(row).getByRole('button', { name: 'Theme' }));
+    expect(within(row).getByRole('button', { name: 'context engineering' })).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'evals as design' })).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'small models' })).toBeInTheDocument();
+
+    await userEvent.click(within(row).getByRole('button', { name: 'evals as design' }));
+    expect(db.queueOutbox).toHaveBeenCalledWith(
+      'assign-to-theme',
+      `${ROW_TODAY} → evals as design`,
+      { itemId: 'i1', themeId: 'th-progress' },
+    );
+
+    // New theme: the app never creates it; the label rides the outbox and
+    // manifold reconciles.
+    const other = screen.getByRole('article', { name: ROW_OLDER });
+    await userEvent.click(within(other).getByRole('button', { name: 'Theme' }));
+    await userEvent.click(within(other).getByRole('button', { name: 'New theme…' }));
+    await userEvent.type(
+      within(other).getByLabelText(`new theme for ${ROW_OLDER}`),
+      'agent memory',
+    );
+    await userEvent.click(within(other).getByRole('button', { name: 'Send' }));
+    expect(db.queueOutbox).toHaveBeenCalledWith(
+      'assign-to-theme',
+      `${ROW_OLDER} → agent memory`,
+      { itemId: 'i2', newThemeLabel: 'agent memory' },
+    );
+  });
+
+  it('narrows visible rows by title from the search box', async () => {
+    await openFeeds();
+
+    await userEvent.type(
+      screen.getByLabelText('search loaded items by title or source'),
+      'latency',
+    );
+    expect(await screen.findByRole('article', { name: ROW_OLDER })).toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: ROW_TODAY })).not.toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: ROW_OTHER })).not.toBeInTheDocument();
+  });
+
+  it('deep links straight to the feeds bench via ?view=feeds', async () => {
+    window.history.replaceState(null, '', '?view=feeds');
+    try {
+      renderApp();
+      expect(await screen.findByRole('navigation', { name: 'sources' })).toBeInTheDocument();
+      expect(screen.getByText('feeds · every source, newest first')).toBeInTheDocument();
+      // The edition did not render; feeds opened immediately.
+      expect(screen.queryByText(LEDE_TITLE)).not.toBeInTheDocument();
+    } finally {
+      // Tests in this file share one happy-dom window; leave the URL clean.
+      window.history.replaceState(null, '', '/');
+    }
+  });
+
+  it('never renders an unread counter on the bench or its tab', async () => {
+    await openFeeds();
+    expect(document.body.textContent).not.toMatch(/\d+\s+unread/i);
+    // The tab itself carries no badge of any kind.
+    expect(screen.getByRole('tab', { name: 'Feeds' }).textContent).toBe('Feeds');
   });
 });

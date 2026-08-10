@@ -11,7 +11,7 @@
 // schemas.ts; the data layer validates rows on the way in and degrades to
 // empty states rather than rendering unvalidated payloads.
 
-export type ViewKey = 'edition' | 'map' | 'desk';
+export type ViewKey = 'edition' | 'map' | 'desk' | 'feeds';
 
 // ---------------------------------------------------------------- context
 
@@ -167,7 +167,25 @@ export type OutboxKind =
   | 'challenge-response'
   | 'send-to-project'
   | 'sources-updated'
-  | 'request-edition';
+  | 'request-edition'
+  | 'assign-to-theme';
+
+/** Payload for outbox kind 'park' when parking a concrete reading item (the
+ * Feeds tab always sends this shape; older callers may park a bare label with
+ * an empty payload, which stays valid). Consumed by manifold. */
+export interface ParkItemPayload {
+  itemId: string;
+  source: string | null;
+  title: string;
+  url: string | null;
+}
+
+/** Payload for outbox kind 'assign-to-theme'. Exactly one of themeId or
+ * newThemeLabel is set: the app never creates themes directly, manifold owns
+ * theme creation and reconciliation off the outbox. Consumed by manifold. */
+export type AssignToThemePayload =
+  | { itemId: string; themeId: string }
+  | { itemId: string; newThemeLabel: string };
 
 export type OutboxStatus = 'queued' | 'seen' | 'done';
 
