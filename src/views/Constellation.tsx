@@ -34,8 +34,8 @@ export const HORIZON_STAR_PATH =
 
 const W = 620;
 const H = 460;
-const SELECT_STROKE = '#1B3FBF';
-const UNREAD_STROKE = '#a79c86';
+const SELECT_STROKE = '#2547f0';
+const UNREAD_STROKE = '#8a8794';
 
 interface ThemeNode extends SimulationNodeDatum {
   kind: 'theme';
@@ -130,7 +130,7 @@ export function Constellation({ themes, projects, links, selectedId, onSelect }:
       .selectAll<SVGLineElement, MapEdge>('line')
       .data(edges)
       .join('line')
-      .attr('stroke', '#cfc8b8')
+      .attr('stroke', 'rgba(30, 25, 40, 0.2)')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', (d) => (d.kind === 'project' ? '4 4' : null));
 
@@ -173,14 +173,14 @@ export function Constellation({ themes, projects, links, selectedId, onSelect }:
           .attr('y', -13)
           .attr('width', 52)
           .attr('height', 26)
-          .attr('rx', 2)
-          .attr('fill', '#33302A');
+          .attr('rx', 6)
+          .attr('fill', '#33302a');
         g.append('text')
           .text(d.project.label)
           .attr('text-anchor', 'middle')
           .attr('dy', 4)
-          .attr('fill', '#f9f9f7')
-          .attr('font-family', "'JetBrains Mono',monospace")
+          .attr('fill', '#ffffff')
+          .attr('font-family', "'Space Grotesk',ui-sans-serif,system-ui,sans-serif")
           .attr('font-size', 10);
         return;
       }
@@ -190,7 +190,7 @@ export function Constellation({ themes, projects, links, selectedId, onSelect }:
         g.append('circle')
           .attr('r', d.r + 6)
           .attr('fill', 'none')
-          .attr('stroke', '#D63A1A')
+          .attr('stroke', '#e0356b')
           .attr('stroke-width', 2)
           .attr('class', 'sp-pulse');
       }
@@ -205,15 +205,15 @@ export function Constellation({ themes, projects, links, selectedId, onSelect }:
       if (d.starred) {
         g.append('path')
           .attr('d', HORIZON_STAR_PATH)
-          .attr('fill', '#1B3FBF')
+          .attr('fill', '#7a3ff0')
           .attr('transform', `translate(${d.r * 0.9} ${-d.r * 0.9})`);
       }
       g.append('text')
         .text(t.label)
         .attr('text-anchor', 'middle')
         .attr('dy', d.r + 15)
-        .attr('fill', '#211c15')
-        .attr('font-family', "'JetBrains Mono',monospace")
+        .attr('fill', '#1a1a20')
+        .attr('font-family', "'Space Grotesk',ui-sans-serif,system-ui,sans-serif")
         .attr('font-size', 11);
     });
 

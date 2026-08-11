@@ -46,15 +46,15 @@ export function stableItemId(link: string): string {
 /** Discipline colors for the theme map. Known disciplines keep the
  * broadsheet palette; unknown ones get a stable assignment from it. */
 const DISCIPLINE_COLORS: Record<string, string> = {
-  craft: '#0F6E56',
-  'ai craft': '#0F6E56',
-  strategy: '#1B3FBF',
-  gtm: '#B5731A',
-  'go-to-market': '#B5731A',
-  general: '#33302A',
+  craft: '#0e9e90',
+  'ai craft': '#0e9e90',
+  strategy: '#2547f0',
+  gtm: '#e39400',
+  'go-to-market': '#e39400',
+  general: '#33302a',
 };
 
-const PALETTE = ['#0F6E56', '#1B3FBF', '#B5731A', '#6B3FA0', '#8A2846'];
+const PALETTE = ['#0e9e90', '#2547f0', '#e39400', '#7a3ff0', '#e0356b'];
 
 export function disciplineColor(discipline: string): string {
   const key = discipline.toLowerCase();

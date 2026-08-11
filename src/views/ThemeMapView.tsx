@@ -84,32 +84,32 @@ export function ThemeMapView() {
             <div className="sp-legend">
               <span>
                 <svg width="14" height="14" aria-hidden="true">
-                  <circle cx="7" cy="7" r="5" fill="none" stroke="#a79c86" strokeDasharray="2 2" />
+                  <circle cx="7" cy="7" r="5" fill="none" stroke="#8a8794" strokeDasharray="2 2" />
                 </svg>
                 unread
               </span>
               <span>
                 <svg width="14" height="14" aria-hidden="true">
-                  <circle cx="7" cy="7" r="5" fill="#0F6E56" fillOpacity="0.9" />
+                  <circle cx="7" cy="7" r="5" fill="#0e9e90" fillOpacity="0.9" />
                 </svg>
                 in progress
               </span>
               <span>
                 <svg width="16" height="14" aria-hidden="true">
-                  <circle cx="8" cy="7" r="4" fill="#0F6E56" />
-                  <circle cx="8" cy="7" r="6.5" fill="none" stroke="#D63A1A" strokeWidth="1.5" />
+                  <circle cx="8" cy="7" r="4" fill="#0e9e90" />
+                  <circle cx="8" cy="7" r="6.5" fill="none" stroke="#e0356b" strokeWidth="1.5" />
                 </svg>
                 position formed
               </span>
               <span>
                 <svg width="16" height="14" aria-hidden="true">
-                  <rect x="2" y="3" width="12" height="8" rx="1" fill="#33302A" />
+                  <rect x="2" y="3" width="12" height="8" rx="1" fill="#33302a" />
                 </svg>
                 your project
               </span>
               <span>
                 <svg width="14" height="14" aria-hidden="true">
-                  <path d={HORIZON_STAR_PATH} transform="translate(7 7) scale(1.2)" fill="#1B3FBF" />
+                  <path d={HORIZON_STAR_PATH} transform="translate(7 7) scale(1.2)" fill="#7a3ff0" />
                 </svg>
                 horizon
               </span>
