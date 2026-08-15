@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Citations } from '../components/Citations';
 import { useStore } from '../state/AppStore';
 import type { EditionEmerging, EditionLede, Project } from '../types';
 
@@ -27,7 +28,7 @@ function emergingCards(emerging: EditionEmerging[]): EditionEmerging[] {
 
 /** The front page: welcome, lede, emerging themes, and where to start. */
 export function EditionView() {
-  const { edition, projectById, sendToManifold, markRead } = useStore();
+  const { edition, projectById, sendToManifold, markRead, openInFeeds } = useStore();
   const [applyOpen, setApplyOpen] = useState(false);
 
   if (!edition) {
@@ -79,11 +80,15 @@ export function EditionView() {
       {lede && (
         <>
           <div className="sp-kicker">{lede.kicker}</div>
-          <h1 className="sp-lede">{lede.title}</h1>
+          <h1 className="sp-lede">
+            {lede.title} <Citations ids={lede.itemIds} label="the lede" />
+          </h1>
           <p className="sp-deck">{lede.deck}</p>
           <div className="sp-why">
             <b>why this leads</b>
-            <p>{lede.why}</p>
+            <p>
+              {lede.why} <Citations ids={lede.itemIds} label="why this leads" />
+            </p>
           </div>
           <div className="sp-row">
             {applyProject && (
@@ -127,7 +132,17 @@ export function EditionView() {
             <span className={e.lane === 'horizon' ? 'sp-etag horizon' : 'sp-etag'}>{e.tag}</span>
             <div className="sp-etitle">{e.title}</div>
             <p className="sp-enote">{e.note}</p>
-            <span className="sp-emeta">{e.meta}</span>
+            {/* [CONTRACT-NOTE] Emerging cards carry no cited item ids: the
+                edition's emerging entries (src/types.ts EditionEmerging) have
+                only a `meta` summary, so the marker is disabled here. To make
+                these live, manifold would persist emerging[].itemIds (it
+                already counts them for the meta line, manifold/src/editorial.ts
+                metaLine); this is a separate follow-up in Mission Control. */}
+            <Citations
+              ids={[]}
+              label={e.title}
+              display={<span className="sp-emeta">{e.meta}</span>}
+            />
           </div>
         ))}
       </div>
@@ -158,6 +173,19 @@ export function EditionView() {
                   <span className="sp-shtitle">{r.title}</span>{' '}
                   <span className="sp-shnote">— {r.note}</span>
                 </div>
+              )}
+              {/* A Start Here row is a single article, so the row is its own
+                  external link; this adds the internal deep link into Feeds so
+                  the reader can park, mark read, or assign it without leaving. */}
+              {r.itemId && (
+                <button
+                  type="button"
+                  className="sp-cite-feeds"
+                  onClick={() => openInFeeds(r.itemId as string)}
+                  aria-label={`open ${r.title} in Feeds`}
+                >
+                  <span aria-hidden="true">⌃</span> Feeds
+                </button>
               )}
             </div>
           ))}

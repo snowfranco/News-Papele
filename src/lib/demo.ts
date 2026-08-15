@@ -126,7 +126,7 @@ export function buildDemoData(): DemoData {
       deck: 'Several of your sources converged on one idea this week: the test set, not the document, now says what good means.',
       why: 'Rising signal across your craft sources, and it maps directly onto the measurement gap in atlas. Reading this is also progress on that build.',
       applyProjectId: 'atlas',
-      itemIds: [],
+      itemIds: ['demo-item-1', 'demo-item-2'],
     },
     emerging: [
       {
@@ -147,9 +147,9 @@ export function buildDemoData(): DemoData {
       },
     ],
     startHere: [
-      { itemId: null, title: 'Why the eval set outranks the spec', minutes: 14, note: 'the lede, in one sitting.' },
-      { itemId: null, title: 'A field guide to agent-to-agent payments', minutes: 9, note: 'the horizon item, early and short.' },
-      { itemId: null, title: 'Context windows are a product decision', minutes: 11, note: 'bridges both of your builds.' },
+      { itemId: 'demo-item-1', title: 'Why the eval set outranks the spec', minutes: 14, note: 'the lede, in one sitting.', url: 'https://example.com/demo/1' },
+      { itemId: 'demo-item-4', title: 'A field guide to agent-to-agent payments', minutes: 9, note: 'the horizon item, early and short.', url: 'https://example.com/demo/4' },
+      { itemId: 'demo-item-2', title: 'Context windows are a product decision', minutes: 11, note: 'bridges both of your builds.', url: 'https://example.com/demo/2' },
     ],
     createdAt: iso,
   };

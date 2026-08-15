@@ -29,6 +29,18 @@ Two kinds, whose payload shapes are the contract manifold consumes (src/types.ts
 
 Every outbox write with a declared payload shape is zod-gated before it leaves the app (src/schemas.ts, `validateOutboxPayload`).
 
+## Citations
+
+manifold grounds every claim in cited reading_items; the cockpit surfaces those sources so the reader can always answer "where did this come from?". The citation atom (src/components/Citations.tsx) is one shared component reused across views: a quiet footnote-style marker next to manifold-authored text, opening a source sheet (desktop popover, mobile bottom sheet) where each source shows title, feed with color chip, and date, plus two actions: Open article (external) and Open in Feeds. Open in Feeds deep-links into the Feeds tab (?view=feeds&item=<id>) and the row scrolls into view and flashes (src/state/AppStore.tsx `openInFeeds`, src/views/FeedsView.tsx), so acting on a source never leaves Superlearn. Markers are keyboard-focusable, dismiss on Esc, click-away, and focus loss, return focus to the marker, and honor prefers-reduced-motion.
+
+Where the citation ids exist today, the marker is live: the lede (title and why-this-leads, from lede.itemIds) and Start Here rows (each row is its own article link plus a Feeds deep-link). Where they do not, the marker renders in a disabled "no sources recorded" state rather than hiding, so the gap is visible and nothing is invented:
+
+- **[CONTRACT-NOTE]** Emerging cards carry no cited ids: `EditionEmerging` (src/types.ts) has only a `meta` summary. manifold already counts the backing sources for that line (manifold/src/editorial.ts `metaLine`) but does not persist their ids; it would add `emerging[].itemIds`.
+- **[CONTRACT-NOTE]** Themes carry no cited ids: `Theme` (src/types.ts) has a `reads` count only, and theme_links join theme to theme or project, not to reading_items. manifold would persist the reads that formed a theme (a `themes.itemIds` field or a theme-reads join). This gap also disables the Position desk progress-line marker, whose sources are those same theme reads.
+- **[CONTRACT-NOTE]** manifold's devil's-advocate counter-argument is not persisted or rendered yet (src/views/PositionDeskView.tsx); when manifold writes its pushback it should carry cited ids like every other claim.
+
+These are UI-side observations; the fields are a separate follow-up in the manifold code. The app change is render-only, no new columns.
+
 ## Architecture
 
 ```

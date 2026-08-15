@@ -504,3 +504,60 @@ describe('feeds bench', () => {
     expect(screen.getByRole('tab', { name: 'Feeds' }).textContent).toBe('Feeds');
   });
 });
+
+// ------------------------------------------------------------- citations
+
+describe('citations', () => {
+  it('opens a live source sheet on the lede with the cited article and both actions', async () => {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+
+    // The lede cites i1, whose title resolves from reading_items.
+    await userEvent.click(screen.getByRole('button', { name: 'sources for the lede' }));
+    const sheet = await screen.findByRole('dialog', { name: 'sources for the lede' });
+    expect(within(sheet).getByText('A field guide to context windows')).toBeInTheDocument();
+    // External and internal actions are both offered.
+    expect(within(sheet).getByRole('link', { name: 'Open article' })).toHaveAttribute(
+      'href',
+      'https://example.com/a',
+    );
+    expect(within(sheet).getByRole('button', { name: 'Open in Feeds' })).toBeInTheDocument();
+  });
+
+  it('renders a disabled marker where no citation ids are recorded (emerging)', async () => {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+
+    // Emerging cards carry no cited ids yet ([CONTRACT-NOTE]); the marker is
+    // honest about the gap rather than hidden or invented.
+    const disabled = await screen.findByLabelText(
+      'no sources recorded for Small models are getting good at tool use',
+    );
+    expect(disabled).toHaveAttribute('title', 'no sources recorded');
+  });
+
+  it('deep-links a cited source into the Feeds tab via Open in Feeds', async () => {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+
+    await userEvent.click(screen.getByRole('button', { name: 'sources for the lede' }));
+    const sheet = await screen.findByRole('dialog', { name: 'sources for the lede' });
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Open in Feeds' }));
+
+    // The Feeds bench opens and the cited row is present; the edition is gone.
+    expect(await screen.findByRole('navigation', { name: 'sources' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: 'A field guide to context windows' })).toBeInTheDocument();
+    expect(screen.queryByText(LEDE_TITLE)).not.toBeInTheDocument();
+    expect(new URLSearchParams(window.location.search).get('item')).toBe('i1');
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('gives each Start Here row an Open in Feeds affordance', async () => {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+
+    expect(
+      screen.getByRole('button', { name: 'open A field guide to context windows in Feeds' }),
+    ).toBeInTheDocument();
+  });
+});

@@ -221,6 +221,27 @@ export interface ReadingItem {
   imagePreview: string | null;
 }
 
+// ----------------------------------------------------------- citations
+
+/** One resolved source behind a manifold-authored claim, shown as a row in
+ * the citation source sheet (src/components/Citations.tsx). Derived at render
+ * time by joining a cited reading_items id back to its row and the source's
+ * color from context.sources.feeds; never persisted. */
+export interface CitationSource {
+  itemId: string;
+  title: string;
+  url: string | null;
+  /** Feed name (reading_items.source_feed), or null when unresolved. */
+  source: string | null;
+  /** Color chip from context.sources.feeds, matched by source name. */
+  sourceColor: string | null;
+  publishedAt: string | null;
+  read: boolean;
+  /** False when the cited id was not in the loaded reading_items window, so
+   * the sheet can be honest rather than invent a title. */
+  resolved: boolean;
+}
+
 // ------------------------------------------------------------- resources
 
 export type ResourceKind = 'book' | 'course' | 'training' | 'webinar' | 'article' | 'other';

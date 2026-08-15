@@ -1,6 +1,7 @@
 // The theme map: the constellation plus a detail panel for the focused star.
 // Projects are a lens on themes, never a filter; horizon themes stand alone.
 import { useState } from 'react';
+import { Citations } from '../components/Citations';
 import { useStore } from '../state/AppStore';
 import type { Theme } from '../types';
 import { Constellation, HORIZON_STAR_PATH } from './Constellation';
@@ -152,7 +153,14 @@ export function ThemeMapView() {
               <div className="sp-dmeta">
                 {theme.discipline} · {theme.mastery} · {theme.reads} reads · {theme.lane}
               </div>
-              <p className="sp-dwhy">{theme.why}</p>
+              {/* [CONTRACT-NOTE] themes carry no cited item ids (src/types.ts
+                  Theme; theme_links only join theme->theme/project), so the
+                  "why it matters" marker is disabled. To make it live, manifold
+                  would persist the reads that formed the theme (e.g. themes.itemIds
+                  or a theme_reads join); a separate follow-up in Mission Control. */}
+              <p className="sp-dwhy">
+                {theme.why} <Citations ids={[]} label={`why ${theme.label} matters`} />
+              </p>
               {feeds.length > 0 && (
                 <p className="sp-dwhy" style={{ color: 'var(--ink2)', fontSize: 14 }}>
                   Feeds: {feeds.join(', ')}

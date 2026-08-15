@@ -20,6 +20,7 @@ import { markLegacyMigrated, migrateLegacySources } from '../lib/migrate';
 import { buildSeedEdition } from '../lib/seed';
 import type {
   AppContext,
+  CitationSource,
   Edition,
   OutboxItem,
   OutboxKind,
@@ -54,6 +55,19 @@ export interface AppStore {
   /** Theme preselected when jumping from the map to the desk. */
   focusThemeId: string | null;
   setFocusThemeId: (id: string | null) => void;
+  /** Reading item the Feeds tab should scroll to and highlight, set by the
+   * "Open in Feeds" citation action and by the ?item= deep link. FeedsView
+   * consumes it once, then clears it. */
+  focusItemId: string | null;
+  setFocusItemId: (id: string | null) => void;
+  /** Deep link a cited item into the Feeds tab (view=feeds, scroll, highlight)
+   * so the reader can act on it without leaving Superlearn. */
+  openInFeeds: (itemId: string) => void;
+  /** Resolve cited reading_items ids to source rows for the citation sheet,
+   * joining each id to its title/url/source/date and the source color from
+   * context. Unresolved ids (outside the loaded window) come back with
+   * resolved=false rather than invented values (src/components/Citations.tsx). */
+  resolveCitations: (ids: string[]) => CitationSource[];
   toast: string | null;
   say: (msg: string) => void;
   sendToManifold: (
@@ -99,10 +113,20 @@ function initialView(): ViewKey {
   return VIEW_KEYS.includes(v as ViewKey) ? (v as ViewKey) : 'edition';
 }
 
+/** Deep link: ?item=<reading_items id> focuses that row in the Feeds tab.
+ * Honored only alongside the feeds view; a stray item on another view is
+ * ignored until the reader opens Feeds. */
+function initialItem(): string | null {
+  return new URLSearchParams(window.location.search).get('item');
+}
+
 function writeViewToUrl(v: ViewKey): void {
   const url = new URL(window.location.href);
   if (v === 'edition') url.searchParams.delete('view');
   else url.searchParams.set('view', v);
+  // The ?item= focus only makes sense on the feeds view; drop it elsewhere so
+  // navigating away does not leave a stale deep link in the URL.
+  if (v !== 'feeds') url.searchParams.delete('item');
   window.history.replaceState(null, '', url);
 }
 
@@ -121,6 +145,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [view, setViewState] = useState<ViewKey>(initialView);
   const [focusThemeId, setFocusThemeId] = useState<string | null>(null);
+  const [focusItemId, setFocusItemId] = useState<string | null>(initialItem);
   const [toast, setToast] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Record<string, string>>({});
@@ -534,6 +559,61 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [context],
   );
 
+  // Citation resolution: join a cited reading_items id to its row and to the
+  // source color from context. Indexed once so the many citation atoms on a
+  // page do not each rebuild the map.
+  const readingItemIndex = useMemo(
+    () => new Map(readingItems.map((i) => [i.id, i])),
+    [readingItems],
+  );
+  const feedColorByName = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const f of context?.sources.feeds ?? []) {
+      if (f.color) m.set(f.name, f.color);
+    }
+    return m;
+  }, [context]);
+
+  const resolveCitations = useCallback(
+    (ids: string[]): CitationSource[] =>
+      ids.map((id) => {
+        const item = readingItemIndex.get(id);
+        if (!item) {
+          // Outside the loaded window: be honest, never invent a title.
+          return {
+            itemId: id,
+            title: id,
+            url: null,
+            source: null,
+            sourceColor: null,
+            publishedAt: null,
+            read: false,
+            resolved: false,
+          };
+        }
+        return {
+          itemId: id,
+          title: item.title,
+          url: item.url,
+          source: item.sourceFeed,
+          sourceColor: item.sourceFeed ? feedColorByName.get(item.sourceFeed) ?? null : null,
+          publishedAt: item.publishedAt ?? item.addedAt ?? null,
+          read: readStates[id] ?? item.read,
+          resolved: true,
+        };
+      }),
+    [readingItemIndex, feedColorByName, readStates],
+  );
+
+  const openInFeeds = useCallback((itemId: string) => {
+    setFocusItemId(itemId);
+    setViewState('feeds');
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', 'feeds');
+    url.searchParams.set('item', itemId);
+    window.history.replaceState(null, '', url);
+  }, []);
+
   const store = useMemo<AppStore>(
     () => ({
       loading,
@@ -552,6 +632,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setView,
       focusThemeId,
       setFocusThemeId,
+      focusItemId,
+      setFocusItemId,
+      openInFeeds,
+      resolveCitations,
       toast,
       say,
       sendToManifold,
@@ -580,6 +664,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       needsOnboarding,
       view,
       focusThemeId,
+      focusItemId,
+      openInFeeds,
+      resolveCitations,
       toast,
       say,
       sendToManifold,
