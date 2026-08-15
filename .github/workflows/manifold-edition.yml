@@ -1,0 +1,75 @@
+name: manifold edition
+
+# The Superlearn editorial pass: Tuesday and Friday at 07:00 America/Toronto.
+# GitHub Actions cron is UTC, so both DST candidates are scheduled and a guard
+# lets only the one that is 07:00 in Toronto proceed (0 11 UTC = 07:00 EDT in
+# summer, 0 12 UTC = 07:00 EST in winter). Equivalent to the Mission Control
+# scheduler trigger manifold_edition (docs/adr/0001-manifold-runtime.md).
+#
+# Disable switch (any one of these pauses it):
+#   1. Set the repository variable MANIFOLD_EDITION_ENABLED to "false"
+#      (Settings > Secrets and variables > Actions > Variables). This is the
+#      trivial, no-commit pause.
+#   2. Comment out the two `schedule` lines below.
+#   3. Disable this workflow in the Actions tab.
+# Manual runs (workflow_dispatch) always proceed, ignoring the hour guard.
+
+on:
+  schedule:
+    - cron: '0 11 * * 2,5'   # 07:00 America/Toronto during EDT (summer)
+    - cron: '0 12 * * 2,5'   # 07:00 America/Toronto during EST (winter)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manifold-edition
+  cancel-in-progress: false
+
+jobs:
+  edition:
+    # Pause without a commit by setting MANIFOLD_EDITION_ENABLED=false.
+    if: ${{ vars.MANIFOLD_EDITION_ENABLED != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - id: gate
+        name: only proceed at 07:00 America/Toronto (DST-safe)
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "manual run: proceeding regardless of the hour."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          HOUR=$(TZ=America/Toronto date +%H)
+          if [ "$HOUR" = "07" ]; then
+            echo "07:xx in America/Toronto: this is the live DST candidate, proceeding."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Currently ${HOUR}:xx in America/Toronto, not 07: this is the off-DST candidate, skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: run the editorial pass
+        if: ${{ steps.gate.outputs.proceed == 'true' }}
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MANIFOLD_MODEL: ${{ vars.MANIFOLD_MODEL }}
+        run: npm run manifold:edition
+
+      - name: upload run report
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifold-edition-report-${{ github.run_id }}
+          path: manifold/reports/
+          if-no-files-found: ignore
+          retention-days: 90
