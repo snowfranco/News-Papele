@@ -1,0 +1,194 @@
+{
+  "name": "hype-but-stale",
+  "description": "A loud but stale single-source hype wave must lose the lede to a quieter, fresher development corroborated across two sources.",
+  "context": {
+    "projects": [
+      {
+        "id": "atlas-copilot",
+        "label": "Atlas Copilot",
+        "description": "In-product AI assistant for onboarding and setup, currently in beta"
+      },
+      {
+        "id": "eval-harness",
+        "label": "Eval Harness",
+        "description": "Internal pipeline for grading agent responses before release"
+      }
+    ],
+    "org_context": "Reader is a senior product manager at a B2B SaaS company shipping AI features; the team is deciding this quarter how deeply to integrate third-party agents with internal design and delivery tools."
+  },
+  "existing_themes": [
+    {
+      "id": "agent-interoperability",
+      "label": "Agent interoperability and MCP",
+      "discipline": "platform",
+      "lane": "applied",
+      "heat": 0.6,
+      "mastery": "progress",
+      "reads": 4,
+      "days_since_update": 6
+    },
+    {
+      "id": "ai-pricing",
+      "label": "Pricing AI features",
+      "discipline": "monetization",
+      "lane": "applied",
+      "heat": 0.4,
+      "mastery": "position",
+      "reads": 7,
+      "days_since_update": 9
+    },
+    {
+      "id": "llm-evals",
+      "label": "Shipping with LLM evals",
+      "discipline": "quality",
+      "lane": "applied",
+      "heat": 0.5,
+      "mastery": "progress",
+      "reads": 3,
+      "days_since_update": 4
+    }
+  ],
+  "state": {
+    "parked": [],
+    "notes": [],
+    "signals": []
+  },
+  "items": [
+    {
+      "id": "hype-1",
+      "title": "Project Prometheus will change everything: inside the most important AI launch of the decade",
+      "source": "The AI Flow",
+      "days_ago": 12,
+      "snippet": "Nexus Labs unveiled Project Prometheus, an autonomous agent it claims will make traditional product development obsolete. The demo drew gasps, but details on architecture, pricing, and availability remain under wraps. Insiders are calling it the biggest leap since the transformer.",
+      "read": false,
+      "topics": ["autonomous-agents", "launches"],
+      "url": "https://theaiflow.example.com/prometheus-changes-everything"
+    },
+    {
+      "id": "hype-2",
+      "title": "Prometheus mania: why every product team should be terrified and thrilled",
+      "source": "The AI Flow",
+      "days_ago": 10,
+      "snippet": "One week after the reveal, Prometheus is all anyone can talk about. Nexus Labs says the waitlist crossed 200,000 signups, though no outside team has published a hands-on review yet. If even half the claims hold, everything changes.",
+      "read": false,
+      "topics": ["autonomous-agents", "hype"],
+      "url": "https://theaiflow.example.com/prometheus-mania"
+    },
+    {
+      "id": "hype-3",
+      "title": "The Prometheus effect: 10 predictions for a post-PM world",
+      "source": "The AI Flow",
+      "days_ago": 9,
+      "snippet": "A speculation piece riffing on what fully autonomous product agents could mean for the PM role. There has been no new information from Nexus Labs since launch day: the company has gone quiet and the demo remains unreleased.",
+      "read": false,
+      "topics": ["autonomous-agents", "future-of-work"],
+      "url": "https://theaiflow.example.com/prometheus-effect-predictions"
+    },
+    {
+      "id": "fresh-1",
+      "title": "Figma and Linear quietly shipped official MCP servers, and it matters more than any model launch",
+      "source": "Lenny's Newsletter",
+      "days_ago": 1,
+      "snippet": "Both companies released production Model Context Protocol servers this week: Figma's exposes 40+ read endpoints for files, components, and comments, while Linear's covers issues, cycles, and roadmap data. Any MCP-capable agent can now ground its work in real design and delivery state, no custom integration required.",
+      "read": false,
+      "topics": ["mcp", "integrations", "figma", "linear"],
+      "url": "https://lennysnewsletter.example.com/figma-linear-mcp-servers"
+    },
+    {
+      "id": "fresh-2",
+      "title": "MCP goes mainstream: what PMs should prototype now that Linear and Figma run production servers",
+      "source": "Product Compass",
+      "days_ago": 0,
+      "snippet": "Following this week's releases from Linear and Figma, the piece walks through three concrete workflows: a standup agent that reads live cycle data, a spec checker that diffs PRDs against shipped components, and a research digest grounded in comment threads. Includes setup steps and access scopes for both servers.",
+      "read": false,
+      "topics": ["mcp", "integrations", "workflows"],
+      "url": "https://productcompass.example.com/mcp-mainstream-pm-prototypes"
+    },
+    {
+      "id": "fresh-3",
+      "title": "Synthetic user panels are getting eerily good, and research teams are split",
+      "source": "Hard Fork Digest",
+      "days_ago": 1,
+      "snippet": "Two startups, Personafy and EchoCohort, now sell simulated user panels tuned on real behavioral data; early customers report directional findings matching live studies in 7 of 9 test comparisons. Researchers warn the failure modes are silent, but the cost per study is roughly a tenth of a moderated panel.",
+      "read": false,
+      "topics": ["synthetic-users", "user-research"],
+      "url": "https://hardforkdigest.example.com/synthetic-user-panels"
+    },
+    {
+      "id": "fresh-4",
+      "title": "A working rubric for grading agent responses before launch",
+      "source": "ChatPRD",
+      "days_ago": 2,
+      "snippet": "A field-tested eval rubric covering correctness, grounding, tone, and recovery behavior, with a scoring sheet the author used across 1,400 sampled transcripts before a GA launch. Practical and immediately usable, nothing flashy.",
+      "read": false,
+      "topics": ["evals", "quality"],
+      "url": "https://chatprd.example.com/agent-eval-rubric"
+    },
+    {
+      "id": "rt-1",
+      "title": "PRDs for agentic features: what changes and what does not",
+      "source": "ChatPRD",
+      "days_ago": 3,
+      "snippet": "Argues that agent PRDs need explicit failure budgets and escalation paths, and shows a template section for defining when the agent must hand off to a human.",
+      "read": false,
+      "topics": ["prd", "agents"],
+      "url": "https://chatprd.example.com/agentic-prds"
+    },
+    {
+      "id": "rt-2",
+      "title": "How AI products are actually pricing in 2026",
+      "source": "Lenny's Newsletter",
+      "days_ago": 5,
+      "snippet": "A survey of 180 AI SaaS companies finds 61% still price per seat, 24% have moved to usage-based or hybrid models, and margins compress fastest for products with heavy agent runtime costs.",
+      "read": false,
+      "topics": ["pricing", "monetization"],
+      "url": "https://lennysnewsletter.example.com/ai-pricing-2026"
+    },
+    {
+      "id": "rt-3",
+      "title": "Roundup: the synthetic research stack is quietly forming",
+      "source": "AI Product Weekly",
+      "days_ago": 4,
+      "snippet": "A short survey of tools simulating user interviews, survey panels, and usability sessions. Vendors overlap little so far and no clear leader has emerged; worth watching rather than adopting.",
+      "read": false,
+      "topics": ["synthetic-users", "user-research", "tooling"],
+      "url": "https://aiproductweekly.example.com/synthetic-research-stack"
+    },
+    {
+      "id": "rt-4",
+      "title": "Prioritizing a roadmap when half the backlog is AI experiments",
+      "source": "Product Compass",
+      "days_ago": 6,
+      "snippet": "A scoring approach that separates learning value from delivery value, with a worked example of killing two experiments early to protect a committed launch.",
+      "read": false,
+      "topics": ["roadmap", "prioritization"],
+      "url": "https://productcompass.example.com/roadmap-ai-experiments"
+    },
+    {
+      "id": "rt-5",
+      "title": "Gemini Flash update trims latency, a small win for real-time product features",
+      "source": "Hard Fork Digest",
+      "days_ago": 7,
+      "snippet": "Google's latest Flash checkpoint cuts median response latency by about 30% in the company's own benchmarks. Useful for voice and autocomplete surfaces, otherwise business as usual.",
+      "read": false,
+      "topics": ["models", "latency"],
+      "url": "https://hardforkdigest.example.com/gemini-flash-latency"
+    },
+    {
+      "id": "rt-6",
+      "title": "Case study: an onboarding copilot that cut time-to-value by 22%",
+      "source": "AI Product Weekly",
+      "days_ago": 5,
+      "snippet": "A mid-market analytics company embedded a setup assistant in its activation flow and reports a 22% reduction in median time-to-first-dashboard, with the biggest gains among non-technical admins.",
+      "read": false,
+      "topics": ["onboarding", "case-study"],
+      "url": "https://aiproductweekly.example.com/onboarding-copilot-case-study"
+    }
+  ],
+  "expect": {
+    "lede_not_in": ["hype-1", "hype-2", "hype-3"],
+    "lede_in": ["fresh-1", "fresh-2"],
+    "min_horizon_emerging": 1,
+    "notes": "The stale single-source Prometheus hype must not lead; the fresh Figma and Linear MCP releases, corroborated across two sources, carry the lede, and synthetic user research supplies a horizon emerging theme."
+  }
+}

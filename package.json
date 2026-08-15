@@ -11,7 +11,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "manifold:edition": "tsx manifold/src/cli.ts edition",
+    "manifold:edition:dry": "tsx manifold/src/cli.ts edition --dry-run",
+    "manifold:sweep": "tsx manifold/src/cli.ts outbox",
+    "manifold:sweep:dry": "tsx manifold/src/cli.ts outbox --dry-run",
+    "manifold:evals": "tsx manifold/evals/runner.ts",
+    "manifold:evals:bless": "tsx manifold/evals/runner.ts --bless",
+    "manifold:evals:ci": "vitest run --config manifold/vitest.config.ts",
+    "manifold:typecheck": "tsc --noEmit -p manifold/tsconfig.json",
+    "manifold:state:import": "tsx manifold/scripts/import-state.ts"
   },
   "dependencies": {
     "d3-drag": "^3.0.0",
@@ -29,6 +38,7 @@
     "@types/d3-drag": "^3.0.7",
     "@types/d3-force": "^3.0.10",
     "@types/d3-selection": "^3.0.11",
+    "@types/node": "^26.2.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.0",
@@ -36,6 +46,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "happy-dom": "^18.0.0",
+    "tsx": "^4.23.12",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.0",
     "vite": "^6.3.5",

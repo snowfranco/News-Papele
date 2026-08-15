@@ -1,0 +1,42 @@
+name: manifold outbox sweep
+
+# Routes the reader's outbox (parks, notes, reading signals, theme
+# assignments; records decisions and handoffs) hourly. Equivalent to the
+# Mission Control scheduler trigger manifold_outbox_sweep. The sweep never
+# calls the model, so it needs only the Supabase key, no Anthropic key. It is
+# idempotent (manifold/src/outbox.ts), so a run GitHub Actions delays or drops
+# under load is harmless: the next hour re-processes anything still queued.
+#
+# Disable switch (any one pauses it):
+#   1. Set the repository variable MANIFOLD_SWEEP_ENABLED to "false".
+#   2. Comment out the `schedule` line below.
+#   3. Disable this workflow in the Actions tab.
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # hourly, on the hour (UTC; timezone-agnostic)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manifold-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    if: ${{ vars.MANIFOLD_SWEEP_ENABLED != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: route the outbox
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run manifold:sweep

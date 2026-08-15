@@ -1,0 +1,192 @@
+{
+  "name": "mixed-relevance",
+  "description": "A mix of project-relevant items and unrelated-but-important reads; nothing may be dropped just for lacking a project tag, and nothing the reader already read or parked may lead or be re-recommended.",
+  "context": {
+    "projects": [
+      {
+        "id": "atlas-crm",
+        "label": "Atlas CRM",
+        "description": "AI copilot inside a sales CRM: drafts outreach, summarizes accounts, fills records"
+      },
+      {
+        "id": "fieldkit",
+        "label": "FieldKit",
+        "description": "Mobile inspection app for utility field crews, offline-heavy usage"
+      }
+    ],
+    "org_context": "The reader is a product manager at a 40-person B2B software company running two products: Atlas CRM, an AI copilot embedded in a sales CRM, and FieldKit, a mobile inspection app for utility crews. They read both to move the two products forward and to sharpen general AI-product craft."
+  },
+  "existing_themes": [
+    {
+      "id": "crm-copilot-adoption",
+      "label": "CRM copilot adoption and trust",
+      "discipline": "product",
+      "lane": "applied",
+      "heat": 0.6,
+      "mastery": "progress",
+      "reads": 5,
+      "days_since_update": 4
+    },
+    {
+      "id": "offline-field-workflows",
+      "label": "Offline-first field workflows",
+      "discipline": "engineering",
+      "lane": "applied",
+      "heat": 0.45,
+      "mastery": "progress",
+      "reads": 3,
+      "days_since_update": 9
+    }
+  ],
+  "state": {
+    "parked": [
+      {
+        "themeId": null,
+        "itemIds": ["mr-4"],
+        "label": "On-device dictation benchmarks, parked for later"
+      }
+    ],
+    "notes": [],
+    "signals": []
+  },
+  "excluded_ids": ["mr-2"],
+  "items": [
+    {
+      "id": "mr-1",
+      "title": "Why sales reps rewrite the AI's email: field notes from 12 CRM copilot rollouts",
+      "source": "Lenny's Newsletter",
+      "days_ago": 1,
+      "snippet": "Interviews across 12 enterprise rollouts found reps send only 18 percent of AI-drafted emails without edits, and trust collapses after a single hallucinated detail about an account. The teams that recovered adoption did it with visible source citations inside the draft, not better models.",
+      "read": true,
+      "topics": ["crm", "copilot", "adoption"],
+      "url": "https://lennys.example-feed.com/p/reps-rewrite-the-ai-email"
+    },
+    {
+      "id": "mr-2",
+      "title": "Grounding copilots in CRM records: retrieval patterns that cut fabricated fields by 40 percent",
+      "source": "The AI Flow",
+      "days_ago": 2,
+      "snippet": "A practical walkthrough of scoping retrieval to the account object graph before generation: fabricated field values dropped 40 percent and p95 latency held under 900 ms after the team moved from whole-CRM embedding search to typed record lookups.",
+      "read": false,
+      "topics": ["crm", "retrieval", "hallucination"],
+      "url": "https://theaiflow.example-feed.com/grounding-copilots-crm-records"
+    },
+    {
+      "id": "mr-3",
+      "title": "Offline-first is a product decision: how inspection apps survive 12-hour connectivity gaps",
+      "source": "Pragmatic Engineer",
+      "days_ago": 3,
+      "snippet": "A case study of utility crews in northern Ontario, where 12-hour dead zones are routine: conflict resolution rules, not sync technology, drove support tickets down 35 percent. Argues PMs should spec merge behavior per field type instead of leaving it to the sync library.",
+      "read": false,
+      "topics": ["field-ops", "offline-sync", "mobile"],
+      "url": "https://pragmaticengineer.example-feed.com/offline-first-product-decision"
+    },
+    {
+      "id": "mr-4",
+      "title": "On-device speech models now handle inspection dictation at 1.2x realtime on mid-tier Android",
+      "source": "Ben's Bites",
+      "days_ago": 0,
+      "snippet": "Benchmarks of three distilled speech models on a Pixel 7a and a Galaxy A54 show inspection-style dictation transcribing at 1.2x realtime with a 4.1 percent word error rate, no network required. Voice-to-form is now viable for field workflows without a cloud round trip.",
+      "read": false,
+      "topics": ["on-device", "speech", "mobile"],
+      "url": "https://bensbites.example-feed.com/on-device-dictation-benchmarks"
+    },
+    {
+      "id": "mr-5",
+      "title": "PRD teardown: specifying a copilot feature when the baseline is a blank text box",
+      "source": "ChatPRD",
+      "days_ago": 4,
+      "snippet": "Walks through a real PRD for an email-drafting copilot: how to define acceptance criteria when output quality is probabilistic, including a rubric section with pass thresholds in place of pixel-level specs.",
+      "read": false,
+      "topics": ["prd", "copilot", "specs"],
+      "url": "https://chatprd.example-feed.com/prd-teardown-copilot-feature"
+    },
+    {
+      "id": "mr-6",
+      "title": "Evals are the new unit tests: a working quality system for LLM features",
+      "source": "Lenny's Newsletter",
+      "days_ago": 1,
+      "snippet": "A rigorous argument that teams shipping LLM features without a golden set are flying blind. Describes a three-tier stack (deterministic assertions, LLM-judge rubrics, a weekly 30-sample human audit) that caught 31 quality regressions in one quarter at a fintech before customers saw them.",
+      "read": false,
+      "topics": ["evals", "llm-quality", "process"],
+      "url": "https://lennys.example-feed.com/p/evals-are-the-new-unit-tests"
+    },
+    {
+      "id": "mr-7",
+      "title": "Frontier price war: flagship model input pricing drops 60 percent overnight",
+      "source": "The AI Flow",
+      "days_ago": 0,
+      "snippet": "The market leader cut input pricing from $1.10 to $0.45 per million tokens and output from $4.40 to $1.80, with two rivals signaling matching cuts within the week. Any AI feature proposal killed on unit economics last quarter deserves a rerun.",
+      "read": false,
+      "topics": ["model-pricing", "unit-economics"],
+      "url": "https://theaiflow.example-feed.com/frontier-price-war-60-percent"
+    },
+    {
+      "id": "mr-8",
+      "title": "The interview snapshot: making weekly discovery compound instead of evaporate",
+      "source": "ChatPRD",
+      "days_ago": 2,
+      "snippet": "An essay on why continuous discovery fails quietly: teams do the weekly calls but never synthesize. Proposes a one-page interview snapshot written within 24 hours of each call, and reports that in 9 of 11 teams studied the habit changed a real roadmap decision within six weeks.",
+      "read": false,
+      "topics": ["discovery", "research", "craft"],
+      "url": "https://chatprd.example-feed.com/interview-snapshot-habit"
+    },
+    {
+      "id": "mr-9",
+      "title": "Weekly roundup: 11 AI product launches you might have missed",
+      "source": "Ben's Bites",
+      "days_ago": 2,
+      "snippet": "A rapid-fire list covering launches from note-taking add-ons to yet another slide generator. Nothing category-defining, mostly incremental feature drops.",
+      "read": false,
+      "topics": ["roundup", "launches"],
+      "url": "https://bensbites.example-feed.com/weekly-roundup-11-launches"
+    },
+    {
+      "id": "mr-10",
+      "title": "AI meeting notes come to every suite: a feature checklist comparison",
+      "source": "The AI Flow",
+      "days_ago": 6,
+      "snippet": "A comparison table of meeting-notes features across four productivity suites. Concludes they are converging on the same checklist, with pricing the only real differentiator left.",
+      "read": false,
+      "topics": ["productivity", "meeting-notes"],
+      "url": "https://theaiflow.example-feed.com/meeting-notes-suite-comparison"
+    },
+    {
+      "id": "mr-11",
+      "title": "How to run a quarterly roadmap review that stays strategic",
+      "source": "ChatPRD",
+      "days_ago": 7,
+      "snippet": "Standard advice on pre-reads, timeboxing, and keeping status updates out of the room. Solid but familiar territory.",
+      "read": false,
+      "topics": ["roadmap", "process"],
+      "url": "https://chatprd.example-feed.com/quarterly-roadmap-review"
+    },
+    {
+      "id": "mr-12",
+      "title": "Conference recap: what stood out at this year's product summit",
+      "source": "Lenny's Newsletter",
+      "days_ago": 8,
+      "snippet": "A recap of keynote themes: AI everywhere, platform consolidation, and the return of in-person workshops. Light on specifics.",
+      "read": false,
+      "topics": ["conference", "recap"],
+      "url": "https://lennys.example-feed.com/p/product-summit-recap"
+    },
+    {
+      "id": "mr-13",
+      "title": "The rise of the fractional CPO",
+      "source": "Product Compass",
+      "days_ago": 9,
+      "snippet": "Profiles of three fractional product leaders and how they structure engagements. Interesting industry context, limited immediate application.",
+      "read": false,
+      "topics": ["careers", "leadership"],
+      "url": "https://productcompass.example-feed.com/fractional-cpo-rise"
+    }
+  ],
+  "expect": {
+    "cited_somewhere": ["mr-6", "mr-7", "mr-8"],
+    "lede_not_in": ["mr-1", "mr-2", "mr-4"],
+    "start_here_not_in": ["mr-1", "mr-2", "mr-4"],
+    "min_horizon_emerging": 1,
+    "notes": "A lazy project-filtering editor drops mr-6, mr-7, and mr-8 because they map to no project; a good editor cites all three (evals discipline, a 60 percent pricing shift, discovery craft) and grows at least one horizon theme from them. Separately, the reader read mr-1, parked mr-4 (manifold state), and parked mr-2 (an outbox park the sweep has not applied yet, via excluded_ids): none of the three may lead or appear in start_here, though each remains fair theme backing."
+  }
+}

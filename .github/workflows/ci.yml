@@ -23,3 +23,10 @@ jobs:
       - name: artifact is current
         run: |
           git diff --exit-code -- index.html || (echo "committed index.html is stale: run npm run build and commit index.html"; exit 1)
+
+      # manifold (the editor agent, manifold/): typecheck and the deterministic
+      # eval subset (the real build + gate, no model call, no API key). The
+      # LLM-judge subset stays a manual `npm run manifold:evals` / `:bless`
+      # command (docs/adr/0001-manifold-runtime.md, manifold/evals/RUBRIC.md).
+      - run: npm run manifold:typecheck
+      - run: npm run manifold:evals:ci

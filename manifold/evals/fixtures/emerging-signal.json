@@ -1,0 +1,240 @@
+{
+  "name": "emerging-signal",
+  "description": "An obvious genuinely-emerging capability shift (agent-curated memory files) reported independently by three sources within 48 hours, buried in routine PM noise.",
+  "context": {
+    "projects": [
+      {
+        "id": "atlas-copilot",
+        "label": "Atlas Copilot",
+        "description": "In-app AI assistant that guides new users of the Atlas analytics suite through setup and their first saved insight"
+      }
+    ],
+    "org_context": "The reader is a senior product manager at a mid-size B2B analytics company, currently leading an in-app AI assistant. They read daily to track agent capability shifts early and to pick up proven product and growth practices."
+  },
+  "existing_themes": [
+    {
+      "id": "usage-based-pricing",
+      "label": "Usage-based pricing and packaging",
+      "discipline": "pricing",
+      "lane": "applied",
+      "heat": 0.35,
+      "mastery": "progress",
+      "reads": 3,
+      "days_since_update": 6
+    },
+    {
+      "id": "activation-benchmarks",
+      "label": "Activation and onboarding benchmarks",
+      "discipline": "growth",
+      "lane": "applied",
+      "heat": 0.5,
+      "mastery": "position",
+      "reads": 7,
+      "days_since_update": 4
+    }
+  ],
+  "state": {
+    "parked": [],
+    "notes": [],
+    "signals": []
+  },
+  "items": [
+    {
+      "id": "es-1",
+      "title": "Stop shipping your roadmap: the case for outcome betting",
+      "source": "Lenny's Newsletter",
+      "days_ago": 0,
+      "snippet": "An interview with a CPO who replaced quarterly feature roadmaps with a portfolio of outcome bets, each carrying an explicit kill criterion. Teams review the portfolio every 6 weeks and killed 4 of their first 11 bets, which she credits for freeing two squads to double down on the winners.",
+      "read": false,
+      "topics": [
+        "roadmapping",
+        "prioritization",
+        "leadership"
+      ],
+      "url": "https://lennys.example.com/outcome-betting"
+    },
+    {
+      "id": "es-2",
+      "title": "The one-page PRD is winning: how top teams cut spec length by 80 percent",
+      "source": "ChatPRD",
+      "days_ago": 1,
+      "snippet": "A look at 30 recent PRDs from staff-level PMs: the median spec is now under 900 words, with context and open questions up front and appendices linked rather than inlined. The teams that shortened specs report faster kickoff meetings but say the discipline lives in the linked decision log, not the page count.",
+      "read": false,
+      "topics": [
+        "prd",
+        "documentation",
+        "process"
+      ],
+      "url": "https://chatprd.example.com/one-page-prd"
+    },
+    {
+      "id": "es-3",
+      "title": "Case study: template galleries lifted week-4 retention by 12 percent at a project tool",
+      "source": "The Product Compass",
+      "days_ago": 2,
+      "snippet": "A project management startup rebuilt onboarding around a gallery of 24 prefilled workspace templates and saw week-4 retention rise from 31 percent to 43 percent over two quarters. The team attributes most of the lift to users reaching a populated workspace in under 3 minutes instead of starting from a blank state.",
+      "read": false,
+      "topics": [
+        "retention",
+        "onboarding",
+        "case-study"
+      ],
+      "url": "https://productcompass.example.com/template-retention-case-study"
+    },
+    {
+      "id": "es-4",
+      "title": "The memory file pattern is quietly becoming the default for long-running agents",
+      "source": "The AI Flow",
+      "days_ago": 1,
+      "snippet": "A survey of 40 production agent teams found 26 have moved from vector-store retrieval to agent-curated memory files: plain text the agent reads at session start and rewrites as it learns. Teams cite easier debugging and user-auditable memory as the main drivers, and three open source agent frameworks added first-class support for the pattern in the past month.",
+      "read": false,
+      "topics": [
+        "agents",
+        "memory",
+        "architecture"
+      ],
+      "url": "https://theaiflow.example.com/memory-file-pattern"
+    },
+    {
+      "id": "es-5",
+      "title": "Five takeaways from ProductCon London",
+      "source": "Department of Product",
+      "days_ago": 3,
+      "snippet": "Recap of the main-stage talks: continuous discovery is now table stakes, platform teams are getting PMs of their own, and every second slide mentioned copilots. The hallway consensus was that job titles are shifting faster than the actual work.",
+      "read": false,
+      "topics": [
+        "conference",
+        "industry",
+        "recap"
+      ],
+      "url": "https://deptofproduct.example.com/productcon-london-recap"
+    },
+    {
+      "id": "es-6",
+      "title": "The PM hiring market in 2026: comp benchmarks from 800 offers",
+      "source": "Lenny's Newsletter",
+      "days_ago": 3,
+      "snippet": "Analysis of 800 verified PM offers over the past year: median senior PM total comp is flat year over year, offers requiring hands-on AI product experience carry a 15 percent premium, and time-to-fill for growth PM roles has stretched to 74 days. Referrals still account for roughly a third of closed offers.",
+      "read": false,
+      "topics": [
+        "hiring",
+        "compensation",
+        "career"
+      ],
+      "url": "https://lennys.example.com/pm-comp-benchmarks-2026"
+    },
+    {
+      "id": "es-7",
+      "title": "Prompt library hygiene: how teams version and test production prompts",
+      "source": "The AI Flow",
+      "days_ago": 4,
+      "snippet": "A practical walkthrough of prompt management at three AI product teams: prompts live in the repo next to code, every change runs against a regression suite of graded examples, and rollbacks are a git revert. The piece argues the interesting problem is now the eval set, not the prompt text.",
+      "read": false,
+      "topics": [
+        "prompts",
+        "llmops",
+        "process"
+      ],
+      "url": "https://theaiflow.example.com/prompt-library-hygiene"
+    },
+    {
+      "id": "es-8",
+      "title": "New long-horizon benchmark: self-curated memory beats retrieval on multi-week agent tasks",
+      "source": "Department of Product",
+      "days_ago": 2,
+      "snippet": "Researchers at ETH Zurich evaluated agents on tasks spanning 200 plus sessions and found agents that maintain and periodically compact their own memory files completed 61 percent of tasks, versus 38 percent for vector-retrieval baselines. The gap widened with task length, and the authors argue memory curation is a distinct capability that current evals do not measure.",
+      "read": false,
+      "topics": [
+        "agents",
+        "memory",
+        "benchmarks",
+        "research"
+      ],
+      "url": "https://deptofproduct.example.com/long-horizon-memory-benchmark"
+    },
+    {
+      "id": "es-9",
+      "title": "A practical guide to quarterly planning with OKR trees",
+      "source": "The Product Compass",
+      "days_ago": 4,
+      "snippet": "A step-by-step planning template that maps company objectives to team key results in a single tree, with a worked example from a 60-person startup. The author's main warning: cap each team at 3 key results or the tree becomes a task list with extra steps.",
+      "read": false,
+      "topics": [
+        "okrs",
+        "planning",
+        "templates"
+      ],
+      "url": "https://productcompass.example.com/okr-tree-guide"
+    },
+    {
+      "id": "es-10",
+      "title": "Managing up when your CEO wants AI in everything",
+      "source": "ChatPRD",
+      "days_ago": 5,
+      "snippet": "A field guide for PMs fielding top-down AI mandates: reframe the ask as a customer problem, bring a cost-of-delay estimate to the exec review, and offer one cheap probe instead of a quarter-long initiative. Includes email scripts for saying no to a demo-driven roadmap without saying no to the CEO.",
+      "read": false,
+      "topics": [
+        "stakeholders",
+        "leadership",
+        "communication"
+      ],
+      "url": "https://chatprd.example.com/managing-up-ai-mandates"
+    },
+    {
+      "id": "es-11",
+      "title": "Benchmarks report: median activation rate across 300 B2B SaaS companies is 37 percent",
+      "source": "Lenny's Newsletter",
+      "days_ago": 5,
+      "snippet": "This year's activation benchmarks from 300 B2B SaaS companies: median activation is 37 percent, top-quartile companies clear 55 percent, and the strongest single correlate is time-to-first-value under one day. Definitions vary wildly, so the report leads with a worksheet for picking your activation event before comparing numbers.",
+      "read": false,
+      "topics": [
+        "activation",
+        "metrics",
+        "benchmarks"
+      ],
+      "url": "https://lennys.example.com/activation-benchmarks-report"
+    },
+    {
+      "id": "es-12",
+      "title": "Memory is becoming a product surface: what PMs should know about agent-maintained memory files",
+      "source": "ChatPRD",
+      "days_ago": 0,
+      "snippet": "As more agent products let the model keep and edit its own long-term memory file, PMs face new design questions: users now expect to view, edit, and reset what the agent remembers about them. Two major assistants shipped user-visible memory editors this quarter, and wrong remembered facts are emerging as a new support ticket category with no established playbook.",
+      "read": false,
+      "topics": [
+        "agents",
+        "memory",
+        "product-design"
+      ],
+      "url": "https://chatprd.example.com/memory-as-product-surface"
+    },
+    {
+      "id": "es-13",
+      "title": "Weekly product news roundup: design tools ship collaboration updates",
+      "source": "Department of Product",
+      "days_ago": 6,
+      "snippet": "This week's release notes in brief: a major design tool added branch-based review for design files, a popular issue tracker shipped customer-facing roadmap pages, and two analytics vendors merged their session replay products. Routine sustaining releases across the board, nothing category-shifting.",
+      "read": false,
+      "topics": [
+        "industry",
+        "releases",
+        "roundup"
+      ],
+      "url": "https://deptofproduct.example.com/weekly-roundup"
+    }
+  ],
+  "expect": {
+    "cited_somewhere": [
+      "es-4",
+      "es-8",
+      "es-12"
+    ],
+    "min_horizon_emerging": 1,
+    "notes": "Three independent sources within 48 hours (survey, benchmark, product-design angle) report the same shift toward agent-curated memory files; a competent editor surfaces this as at least one horizon-lane emerging theme citing those items despite heavier routine PM noise.",
+    "prominent_cites_any": [
+      "es-4",
+      "es-8",
+      "es-12"
+    ]
+  }
+}

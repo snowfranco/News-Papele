@@ -24,4 +24,13 @@ export default tseslint.config(
       globals: { ...globals.node },
     },
   },
+  {
+    // manifold is the Node/TypeScript editor agent (manifold/README.md); it
+    // runs via tsx, not in the browser, so it gets Node globals instead of
+    // the app's browser globals.
+    files: ['manifold/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 );

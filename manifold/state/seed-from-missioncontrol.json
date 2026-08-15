@@ -1,0 +1,71 @@
+{
+  "parked": [
+    {
+      "ts": "2026-08-12T22:03:33-04:00",
+      "themeId": null,
+      "itemIds": [
+        "feed-feakxi",
+        "feed-wf6xzw",
+        "feed-1rm6l1f"
+      ],
+      "label": "An AI code review bot, built in 30 minutes",
+      "outboxId": "9d1b5c72-6256-42ca-a047-88099b2eb3e0"
+    }
+  ],
+  "notes": [
+    {
+      "ts": "2026-08-12T22:03:33-04:00",
+      "text": "I am preparing for an AI focused product manager role with qa experience. Part of tools to build: ai use case generation, tests. This topic seems relevant. Give me the article links so i can read on the topic: Specs over vibes",
+      "source": "command-bar",
+      "outboxId": "1b077de4-457b-4521-889a-bc9a5d1a5ed4"
+    }
+  ],
+  "signals": [
+    {
+      "ts": "2026-08-12T22:03:32-04:00",
+      "kind": "start-reading",
+      "themeId": null,
+      "itemIds": [
+        "feed-feakxi",
+        "feed-wf6xzw",
+        "feed-1rm6l1f"
+      ],
+      "label": "An AI code review bot, built in 30 minutes",
+      "outboxId": "741b7295-e217-48a9-98ca-5f99ee8f8f6e"
+    },
+    {
+      "ts": "2026-08-12T22:03:32-04:00",
+      "kind": "start-reading",
+      "themeId": null,
+      "itemIds": [
+        "feed-feakxi",
+        "feed-wf6xzw",
+        "feed-1rm6l1f"
+      ],
+      "label": "An AI code review bot, built in 30 minutes",
+      "outboxId": "80e2d7eb-72ab-46ba-985c-1bc864872abc"
+    },
+    {
+      "ts": "2026-08-12T22:03:32-04:00",
+      "kind": "start-reading",
+      "themeId": null,
+      "itemIds": [
+        "feed-feakxi",
+        "feed-wf6xzw",
+        "feed-1rm6l1f"
+      ],
+      "label": "An AI code review bot, built in 30 minutes",
+      "outboxId": "255c8c67-5caa-4120-bc76-d005da45ba17"
+    }
+  ],
+  "assignments": [
+    {
+      "ts": "2026-08-12T22:03:33-04:00",
+      "itemId": "feed-13pwfzf",
+      "themeId": null,
+      "newThemeLabel": "Quality",
+      "label": "What is an Eval? → Quality",
+      "outboxId": "078d38cf-4653-4de8-9556-836c7457d0b4"
+    }
+  ]
+}
