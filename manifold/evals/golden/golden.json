@@ -1,0 +1,38 @@
+{
+  "all-noise": {
+    "judged_floors": {
+      "groundedness-depth": 0.78,
+      "emergence-quality": 0.45,
+      "clustering-coherence": 0.65,
+      "rationale-quality": 0.73,
+      "tone-welcome": 0.75
+    }
+  },
+  "emerging-signal": {
+    "judged_floors": {
+      "groundedness-depth": 0.6,
+      "emergence-quality": 0.7,
+      "clustering-coherence": 0.75,
+      "rationale-quality": 0.7,
+      "tone-welcome": 0.77
+    }
+  },
+  "mixed-relevance": {
+    "judged_floors": {
+      "groundedness-depth": 0.77,
+      "emergence-quality": 0.4,
+      "clustering-coherence": 0.73,
+      "rationale-quality": 0.7,
+      "tone-welcome": 0.75
+    }
+  },
+  "hype-but-stale": {
+    "judged_floors": {
+      "groundedness-depth": 0.7,
+      "emergence-quality": 0.7,
+      "clustering-coherence": 0.55,
+      "rationale-quality": 0.7,
+      "tone-welcome": 0.75
+    }
+  }
+}

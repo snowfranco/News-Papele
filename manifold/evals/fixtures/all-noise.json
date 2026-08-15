@@ -1,0 +1,183 @@
+{
+  "name": "all-noise",
+  "description": "An entire batch of routine low-signal content: the editor must produce a grounded, modest edition without manufacturing emergence or excitement.",
+  "context": {
+    "projects": [
+      {
+        "id": "prd-copilot",
+        "label": "PRD Copilot",
+        "description": "Internal assistant that drafts and reviews PRDs for the product team"
+      },
+      {
+        "id": "onboarding-assistant",
+        "label": "Onboarding Assistant",
+        "description": "In-app AI guide that walks new users through first-run setup"
+      }
+    ],
+    "org_context": "Reader is a senior product manager at a B2B SaaS company shipping AI features. They skim feeds daily to catch real shifts early and have low tolerance for hype, listicles, and recycled advice."
+  },
+  "existing_themes": [
+    {
+      "id": "ai-prd-tooling",
+      "label": "AI tooling for PRDs and specs",
+      "discipline": "product",
+      "lane": "applied",
+      "heat": 0.4,
+      "mastery": "progress",
+      "reads": 7,
+      "days_since_update": 5
+    },
+    {
+      "id": "agent-evals",
+      "label": "Evaluating agent quality in production",
+      "discipline": "engineering",
+      "lane": "horizon",
+      "heat": 0.3,
+      "mastery": "unread",
+      "reads": 2,
+      "days_since_update": 9
+    },
+    {
+      "id": "ai-onboarding-patterns",
+      "label": "Onboarding patterns for AI features",
+      "discipline": "design",
+      "lane": "applied",
+      "heat": 0.5,
+      "mastery": "position",
+      "reads": 11,
+      "days_since_update": 3
+    }
+  ],
+  "state": {
+    "parked": [],
+    "notes": [],
+    "signals": []
+  },
+  "items": [
+    {
+      "id": "noise-1",
+      "title": "10 ChatGPT Prompts Every PM Should Bookmark",
+      "source": "The PM Stack",
+      "days_ago": 0,
+      "snippet": "A refreshed list of prompt templates for standups, roadmaps, and stakeholder updates. Most entries are lightly edited versions of the same list the newsletter ran earlier this year.",
+      "read": false,
+      "topics": ["prompts", "productivity"],
+      "url": "https://the-pm-stack.com/10-chatgpt-prompts-every-pm"
+    },
+    {
+      "id": "noise-2",
+      "title": "This Week in AI: Our Friday Roundup",
+      "source": "The AI Flow",
+      "days_ago": 1,
+      "snippet": "A grab bag of links from the week: a few funding mentions without amounts, two model updates already covered elsewhere, and a meme section. No analysis beyond one-line blurbs.",
+      "read": false,
+      "topics": ["roundup"],
+      "url": "https://the-ai-flow.com/friday-roundup-week-32"
+    },
+    {
+      "id": "noise-3",
+      "title": "How NotableAI's Meeting Notetaker Gives You Your Hours Back (Sponsored)",
+      "source": "Product Growth Weekly",
+      "days_ago": 1,
+      "snippet": "A sponsored walkthrough of a meeting notetaker app. The copy promises time savings but offers no benchmarks, customer names, or pricing details.",
+      "read": false,
+      "topics": ["sponsored", "tools"],
+      "url": "https://productgrowthweekly.com/notableai-sponsored"
+    },
+    {
+      "id": "noise-4",
+      "title": "Why Product Sense Still Matters in the Age of AI",
+      "source": "Lenny's Newsletter",
+      "days_ago": 2,
+      "snippet": "A guest essay arguing that judgment and taste remain important even as AI handles more execution. The argument is familiar and the examples are hypothetical rather than drawn from real teams.",
+      "read": false,
+      "topics": ["career", "opinion"],
+      "url": "https://lennysnewsletter.com/product-sense-age-of-ai"
+    },
+    {
+      "id": "noise-5",
+      "title": "5 AI Tools We're Loving This Month",
+      "source": "The PM Stack",
+      "days_ago": 2,
+      "snippet": "Short blurbs on five tools, mostly note apps and slide generators. Each gets two sentences and an affiliate link; none is tested beyond first impressions.",
+      "read": false,
+      "topics": ["tools", "listicle"],
+      "url": "https://the-pm-stack.com/5-ai-tools-august"
+    },
+    {
+      "id": "noise-6",
+      "title": "The Best AI Newsletters to Follow in 2026",
+      "source": "Product Growth Weekly",
+      "days_ago": 3,
+      "snippet": "A meta listicle ranking other newsletters, including several the reader already follows. Rankings are based on subscriber counts the author admits are self-reported.",
+      "read": false,
+      "topics": ["meta", "listicle"],
+      "url": "https://productgrowthweekly.com/best-ai-newsletters-2026"
+    },
+    {
+      "id": "noise-7",
+      "title": "Weekend Reads: Links We Liked",
+      "source": "ChatPRD Digest",
+      "days_ago": 4,
+      "snippet": "Seven links with one-line descriptions, ranging from a productivity thread to a video essay about focus. Nothing tied to product work specifically.",
+      "read": false,
+      "topics": ["roundup"],
+      "url": "https://chatprd.ai/digest/weekend-reads-aug"
+    },
+    {
+      "id": "noise-8",
+      "title": "Is AI Coming for PM Jobs? (Again)",
+      "source": "The AI Flow",
+      "days_ago": 4,
+      "snippet": "Another take on whether AI will replace product managers, concluding it will change the role rather than eliminate it. Cites no data and revisits the same arguments from the author's piece last quarter.",
+      "read": false,
+      "topics": ["career", "opinion"],
+      "url": "https://the-ai-flow.com/ai-coming-for-pm-jobs-again"
+    },
+    {
+      "id": "noise-9",
+      "title": "A Quick Guide to Writing PRDs Faster with AI",
+      "source": "ChatPRD Digest",
+      "days_ago": 5,
+      "snippet": "A rehash of standard advice: start with a template, iterate with a chatbot, have a human review the output. The workflow described is identical to guides published widely over the past two years.",
+      "read": false,
+      "topics": ["prds", "how-to"],
+      "url": "https://chatprd.ai/digest/write-prds-faster"
+    },
+    {
+      "id": "noise-10",
+      "title": "Our Favorite Product Takes from Social This Week",
+      "source": "Product Growth Weekly",
+      "days_ago": 6,
+      "snippet": "Screenshots of ten posts about product management, mostly jokes and one-liners about meetings. Curated for entertainment, with no commentary attached.",
+      "read": false,
+      "topics": ["roundup", "social"],
+      "url": "https://productgrowthweekly.com/favorite-takes-week"
+    },
+    {
+      "id": "noise-11",
+      "title": "Poll Results: How Often Do You Use AI at Work?",
+      "source": "The PM Stack",
+      "days_ago": 7,
+      "snippet": "Results from an informal reader poll of 214 respondents: 61 percent say they use AI tools daily, 24 percent weekly. The author notes the sample is self-selected and skews toward heavy AI users, so the numbers say little about the broader market.",
+      "read": false,
+      "topics": ["survey"],
+      "url": "https://the-pm-stack.com/poll-ai-usage-results"
+    },
+    {
+      "id": "noise-12",
+      "title": "How to Stay Productive When Every Week Brings a New Model",
+      "source": "Lenny's Newsletter",
+      "days_ago": 7,
+      "snippet": "Light advice on managing tool fatigue: pick a stack, review it quarterly, ignore launch-day noise. Reasonable but generic guidance with no new information.",
+      "read": false,
+      "topics": ["productivity", "opinion"],
+      "url": "https://lennysnewsletter.com/productive-new-model-every-week"
+    }
+  ],
+  "expect": {
+    "min_horizon_emerging": 1,
+    "max_themes": 6,
+    "notes": "Every item is routine noise, so a good edition stays modest, picks its best honest horizon read, and invents no signals, numbers, or corroboration that the corpus does not contain."
+  }
+}

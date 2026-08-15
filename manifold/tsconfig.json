@@ -1,0 +1,22 @@
+{
+  "//": "manifold runs on Node via tsx (esbuild resolution), so it imports the app's real contract at ../../src directly. bundler resolution accepts the app's extensionless './types' import; allowImportingTsExtensions accepts manifold's own explicit .ts specifiers (app-contract.ts). No emit: tsx strips types at runtime, this config only type-checks.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src", "evals", "tests", "scripts", "vitest.config.ts"]
+}
