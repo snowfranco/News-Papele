@@ -64,11 +64,12 @@ The build is a single self-contained HTML file via vite-plugin-singlefile (vite.
 | outbox | app | manifold (consumes: queued, seen, done) |
 | reading_items | app (feed refresh) | app, manifold |
 | article_read_states | app | app |
+| manifold_state | manifold (agent memory: parks, notes, signals, assignments) | manifold |
 | resources, theme_resources | reserved for the resources canon layer | app |
 
 Durable resources (books, courses) get their own table now so the later canon layer needs no rewrite; articles stay in reading_items (supabase/migrations/20260804000000_superlearn.sql).
 
-To apply the schema, paste supabase/migrations/20260804000000_superlearn.sql into the Supabase SQL editor and run it (idempotent, safe to re-run). Before the migration runs, the app degrades gracefully: missing tables are recorded and surfaced as one quiet setup hint instead of a crash (src/data/dataLayer.ts, `degradedTables`).
+To apply the schema, paste the two migrations in supabase/migrations/ into the Supabase SQL editor and run them (idempotent, safe to re-run): 20260804000000_superlearn.sql (the app schema) and 20260815000000_manifold_state.sql (manifold's agent memory). Before the migrations run, the app degrades gracefully: missing tables are recorded and surfaced as one quiet setup hint instead of a crash (src/data/dataLayer.ts, `degradedTables`).
 
 ## Assisted onboarding
 
@@ -90,10 +91,16 @@ npm run check    # lint + typecheck + test + build
 
 ## Deploy
 
-GitHub Pages serves index.html from the main branch root (inferred from the previous deployment). CI (.github/workflows/ci.yml) runs lint, typecheck, the smoke test, and the build, then verifies the committed artifact is current.
+GitHub Pages serves index.html from the main branch root (inferred from the previous deployment). CI (.github/workflows/ci.yml) runs lint, typecheck, the smoke test, and the build, then verifies the committed artifact is current, plus manifold's typecheck and deterministic eval subset.
+
+## manifold: the editor agent
+
+manifold lives in `manifold/` and is part of Superlearn: it deploys with the app and imports the app's contract directly (src/schemas.ts and src/types.ts, through manifold/src/app-contract.ts), so the two can never drift. It runs on GitHub Actions on Node via tsx: the editorial pass on Tuesday and Friday 07:00 America/Toronto, the outbox sweep hourly (docs/adr/0001-manifold-runtime.md).
+
+A fresh clone plus a Supabase project plus one Anthropic key produces editions with no other repo involved: install (`npm ci`), copy `.env.example` to `.env` and fill in `SUPABASE_SERVICE_ROLE_KEY` and `ANTHROPIC_API_KEY`, apply the two migrations, and run `npm run manifold:edition`. Full setup, schedules, disable switches, and the evals harness: manifold/README.md.
 
 ## Phase plan
 
 - **Phase 1, walking skeleton (this).** The cockpit reads editions, themes, and links; writes actions to the outbox; ships a seed edition built client-side from feeds before manifold's first write (src/lib/seed.ts).
 - **Phase 2, hardening.** Full test pyramid. A manifold evals harness with a rubric: rationale groundedness, horizon coverage, emergence versus hype, clustering coherence, no-shame tone, and tags never filter. Schema validation gating on everything manifold writes.
-- **Phase 3+, parked.** Resources canon layer, gamification, org dashboards. Manifold itself lives in a separate Mission Control repo and only meets this app through Supabase.
+- **Phase 3+, parked.** Resources canon layer, gamification, org dashboards. Manifold now lives in this repo (manifold/) and deploys with the app; it meets the cockpit only through Supabase, exactly as before, but is versioned and shipped as one product (docs/adr/0001-manifold-runtime.md).
