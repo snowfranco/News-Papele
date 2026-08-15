@@ -72,6 +72,10 @@ export interface Theme {
   mastery: Mastery;
   why: string;
   reads: number;
+  /** reading_items ids that formed this theme, so the theme map's detail
+   * panel can surface its sources. manifold persists at least one (gate:
+   * citation-ids-present); empty only for rows written before that gate. */
+  itemIds: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -110,6 +114,10 @@ export interface EditionEmerging {
   note: string;
   meta: string;
   lane: Lane;
+  /** reading_items ids backing this card, so the app can surface its
+   * sources. manifold persists at least one (gate: citation-ids-present);
+   * empty only for editions written before that gate existed. */
+  itemIds: string[];
 }
 
 export interface EditionRead {

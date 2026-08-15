@@ -188,12 +188,10 @@ export function PositionDeskView() {
               <i key={i} className={i < theme.reads ? 'on' : ''} />
             ))}
           </div>
-          {/* [CONTRACT-NOTE] the reads that fed this theme's mastery progress
-              are a count only (src/types.ts Theme.reads); the backing item ids
-              are not persisted, so the marker is disabled. manifold would need
-              to record per-theme backing ids for this to go live; a separate
-              follow-up in Mission Control. */}
-          <Citations ids={[]} label={`reads behind ${theme.label}`} />
+          {/* Live citation: the reads that formed this theme, from
+              themes.item_ids (manifold/src/editorial.ts; gate
+              citation-ids-present). Empty only for pre-migration themes. */}
+          <Citations ids={theme.itemIds} label={`reads behind ${theme.label}`} />
         </div>
       )}
 

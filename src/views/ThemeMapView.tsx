@@ -153,13 +153,11 @@ export function ThemeMapView() {
               <div className="sp-dmeta">
                 {theme.discipline} · {theme.mastery} · {theme.reads} reads · {theme.lane}
               </div>
-              {/* [CONTRACT-NOTE] themes carry no cited item ids (src/types.ts
-                  Theme; theme_links only join theme->theme/project), so the
-                  "why it matters" marker is disabled. To make it live, manifold
-                  would persist the reads that formed the theme (e.g. themes.itemIds
-                  or a theme_reads join); a separate follow-up in Mission Control. */}
+              {/* Live citation: manifold persists themes.item_ids
+                  (manifold/src/editorial.ts; gate citation-ids-present). Themes
+                  written before that carry none and show the disabled marker. */}
               <p className="sp-dwhy">
-                {theme.why} <Citations ids={[]} label={`why ${theme.label} matters`} />
+                {theme.why} <Citations ids={theme.itemIds} label={`why ${theme.label} matters`} />
               </p>
               {feeds.length > 0 && (
                 <p className="sp-dwhy" style={{ color: 'var(--ink2)', fontSize: 14 }}>

@@ -13,6 +13,9 @@ const HORIZON_CARD: EditionEmerging = {
   note: 'manifold watches for early signal beyond your projects: new ideas gaining trajectory before they are loud.',
   meta: 'always on',
   lane: 'horizon',
+  // A UI stand-in, not a manifold claim: no sources to cite, so its marker
+  // stays in the honest disabled state.
+  itemIds: [],
 };
 
 /** Guarantee a horizon card among the (max 3) displayed emerging cards. */
@@ -132,14 +135,12 @@ export function EditionView() {
             <span className={e.lane === 'horizon' ? 'sp-etag horizon' : 'sp-etag'}>{e.tag}</span>
             <div className="sp-etitle">{e.title}</div>
             <p className="sp-enote">{e.note}</p>
-            {/* [CONTRACT-NOTE] Emerging cards carry no cited item ids: the
-                edition's emerging entries (src/types.ts EditionEmerging) have
-                only a `meta` summary, so the marker is disabled here. To make
-                these live, manifold would persist emerging[].itemIds (it
-                already counts them for the meta line, manifold/src/editorial.ts
-                metaLine); this is a separate follow-up in Mission Control. */}
+            {/* Live citation: manifold persists emerging[].itemIds
+                (manifold/src/editorial.ts; gate citation-ids-present). Older
+                editions written before that carry none and fall back to the
+                disabled marker. */}
             <Citations
-              ids={[]}
+              ids={e.itemIds}
               label={e.title}
               display={<span className="sp-emeta">{e.meta}</span>}
             />

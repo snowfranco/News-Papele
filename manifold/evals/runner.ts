@@ -158,6 +158,9 @@ function materialize(fixture: Fixture): PassInputs {
       mastery: t.mastery,
       why: '',
       reads: t.reads,
+      // Carried-forward input themes need no backing ids; the gate checks the
+      // themes a pass writes, not the ones it reads.
+      itemIds: [],
       createdAt: daysAgo(t.days_since_update + 30),
       updatedAt: daysAgo(t.days_since_update),
     })),

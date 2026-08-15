@@ -124,6 +124,9 @@ export function buildFromModel(inputs: PassInputs, output: ModelOutput): BuiltPa
       heat: normalizeHeat(rawById.get(finalId) ?? 0, maxRaw),
       mastery: existing?.mastery ?? (readCount > 0 ? 'progress' : 'unread'),
       reads: Math.max(existing?.reads ?? 0, readCount),
+      // The reads that formed this theme, so the map's detail panel can cite
+      // them (gate: citation-ids-present). Merged model ids, matching the audit.
+      item_ids: t.item_ids,
       created_at: existing?.createdAt || inputs.nowIso,
       updated_at: inputs.nowIso,
     };
@@ -195,6 +198,9 @@ export function buildFromModel(inputs: PassInputs, output: ModelOutput): BuiltPa
       note: e.note,
       meta: backing.length > 0 ? metaLine(backing, inputs.nowIso) : 'from your sources',
       lane: theme?.lane ?? 'horizon',
+      // The items behind this card, so the app can surface its sources (gate:
+      // citation-ids-present). Same ids the audit records.
+      item_ids: e.item_ids,
     };
   });
 

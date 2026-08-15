@@ -61,6 +61,7 @@ const fx = vi.hoisted(() => {
         note: 'A steady current with no project attached; pure curiosity.',
         meta: 'seen across two sources',
         lane: 'horizon',
+        itemIds: ['i3'],
       },
       {
         themeId: 'th-progress',
@@ -69,6 +70,7 @@ const fx = vi.hoisted(() => {
         note: 'Keeps surfacing next to your build notes.',
         meta: 'feeds frameshift',
         lane: 'applied',
+        itemIds: [],
       },
     ],
     startHere: [
@@ -100,6 +102,7 @@ const fx = vi.hoisted(() => {
       mastery: 'position',
       why: 'you have already written a column here.',
       reads: 7,
+      itemIds: ['i1'],
       createdAt: '2026-07-20T00:00:00.000Z',
       updatedAt: '2026-08-03T00:00:00.000Z',
     },
@@ -112,6 +115,7 @@ const fx = vi.hoisted(() => {
       mastery: 'progress',
       why: 'mid-thread; the argument is still forming.',
       reads: 3,
+      itemIds: ['i2'],
       createdAt: '2026-07-25T00:00:00.000Z',
       updatedAt: '2026-08-02T00:00:00.000Z',
     },
@@ -125,6 +129,7 @@ const fx = vi.hoisted(() => {
       mastery: 'unread',
       why: 'a new current worth watching.',
       reads: 0,
+      itemIds: ['i3'],
       createdAt: '2026-08-01T00:00:00.000Z',
       updatedAt: '2026-08-03T00:00:00.000Z',
     },
@@ -524,14 +529,28 @@ describe('citations', () => {
     expect(within(sheet).getByRole('button', { name: 'Open in Feeds' })).toBeInTheDocument();
   });
 
-  it('renders a disabled marker where no citation ids are recorded (emerging)', async () => {
+  it('opens a live source sheet on an emerging card that carries item ids', async () => {
     renderApp();
     await screen.findByText(LEDE_TITLE);
 
-    // Emerging cards carry no cited ids yet ([CONTRACT-NOTE]); the marker is
-    // honest about the gap rather than hidden or invented.
+    // This emerging card cites i3; the marker is live.
+    await userEvent.click(
+      screen.getByRole('button', { name: 'sources for Small models are getting good at tool use' }),
+    );
+    const sheet = await screen.findByRole('dialog', {
+      name: 'sources for Small models are getting good at tool use',
+    });
+    expect(within(sheet).getByText('The quiet rise of on-device inference')).toBeInTheDocument();
+  });
+
+  it('renders a disabled marker on an emerging card with no recorded ids', async () => {
+    renderApp();
+    await screen.findByText(LEDE_TITLE);
+
+    // An older edition may carry an emerging entry with no item_ids; the marker
+    // is honest about the gap rather than hidden or invented.
     const disabled = await screen.findByLabelText(
-      'no sources recorded for Small models are getting good at tool use',
+      'no sources recorded for Evals as a design instrument',
     );
     expect(disabled).toHaveAttribute('title', 'no sources recorded');
   });
