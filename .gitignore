@@ -3,3 +3,17 @@ dist/
 *.log
 .DS_Store
 coverage/
+
+# Secrets: BYOK Anthropic key and Supabase service role key live here, never
+# committed. See .env.example and manifold/README.md.
+.env
+.env.*
+!.env.example
+
+# manifold run reports are decision-grade local output / CI artifacts, not
+# source (manifold/src/report.ts, manifold/README.md).
+manifold/reports/
+
+# Full-harness eval history is per-run local output; golden floors are the
+# committed baseline (manifold/evals/golden/golden.json).
+manifold/evals/results/*.jsonl
