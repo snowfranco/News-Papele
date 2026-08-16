@@ -3,6 +3,7 @@
 // outbox; the desk works with or without themes because learning is never
 // gated by what manifold has charted so far.
 import { useMemo, useState } from 'react';
+import { Citations } from '../components/Citations';
 import { POSITION_READY_READS } from '../config';
 import { shortDate } from '../lib/format';
 import { useStore } from '../state/AppStore';
@@ -177,14 +178,20 @@ export function PositionDeskView() {
         {deskHeadline(theme)}
       </h1>
       {theme && (
-        <div
-          className="sp-prog"
-          role="img"
-          aria-label={`${Math.min(theme.reads, POSITION_READY_READS)} of ${POSITION_READY_READS} reads toward a position`}
-        >
-          {Array.from({ length: POSITION_READY_READS }, (_, i) => (
-            <i key={i} className={i < theme.reads ? 'on' : ''} />
-          ))}
+        <div className="sp-progline">
+          <div
+            className="sp-prog"
+            role="img"
+            aria-label={`${Math.min(theme.reads, POSITION_READY_READS)} of ${POSITION_READY_READS} reads toward a position`}
+          >
+            {Array.from({ length: POSITION_READY_READS }, (_, i) => (
+              <i key={i} className={i < theme.reads ? 'on' : ''} />
+            ))}
+          </div>
+          {/* Live citation: the reads that formed this theme, from
+              themes.item_ids (manifold/src/editorial.ts; gate
+              citation-ids-present). Empty only for pre-migration themes. */}
+          <Citations ids={theme.itemIds} label={`reads behind ${theme.label}`} />
         </div>
       )}
 
@@ -228,6 +235,12 @@ export function PositionDeskView() {
       </div>
       {advocateOpen && (
         <div className="sp-applybox">
+          {/* [CONTRACT-NOTE] manifold's own devil's-advocate counter-argument
+              is not persisted or rendered yet: the only rebuttal shown here is
+              the reader's own steelman below. When manifold writes its pushback
+              (e.g. a manifold-authored position with cited ids), it should carry
+              a citation marker like every other manifold claim. Separate
+              follow-up in Mission Control. */}
           <p>
             Before this goes out: what is the strongest case against it? manifold will push back
             on its next run. You can answer now or let it come to you.

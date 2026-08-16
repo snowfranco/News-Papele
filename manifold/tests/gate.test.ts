@@ -99,6 +99,8 @@ describe('manifold deterministic gate', () => {
     expect(Object.values(gate.checks).every(Boolean)).toBe(true);
     // schema-valid is one of the checks the extraction promised to keep.
     expect(gate.checks['schema-valid']).toBe(true);
+    // Every emerging entry and theme carries at least one backing id.
+    expect(gate.checks['citation-ids-present']).toBe(true);
   });
 
   it('fails cited-ids-exist when the lede cites an unknown item', () => {
@@ -150,5 +152,23 @@ describe('manifold deterministic gate', () => {
     output.welcome = 'You have 4 things waiting for you today.';
     const gate = runGate(baseInputs(), buildFromModel(baseInputs(), output));
     expect(gate.checks['no-shame-welcome']).toBe(false);
+  });
+
+  it('fails citation-ids-present when an emerging entry persists no item ids', () => {
+    const inputs = baseInputs();
+    const built = buildFromModel(inputs, baseOutput());
+    built.edition.emerging[0]!.item_ids = [];
+    const gate = runGate(inputs, built);
+    expect(gate.checks['citation-ids-present']).toBe(false);
+    expect(gate.pass).toBe(false);
+  });
+
+  it('fails citation-ids-present when a theme persists no item ids', () => {
+    const inputs = baseInputs();
+    const built = buildFromModel(inputs, baseOutput());
+    built.themes[0]!.item_ids = [];
+    const gate = runGate(inputs, built);
+    expect(gate.checks['citation-ids-present']).toBe(false);
+    expect(gate.pass).toBe(false);
   });
 });

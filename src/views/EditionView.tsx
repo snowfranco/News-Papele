@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Citations } from '../components/Citations';
 import { useStore } from '../state/AppStore';
 import type { EditionEmerging, EditionLede, Project } from '../types';
 
@@ -12,6 +13,9 @@ const HORIZON_CARD: EditionEmerging = {
   note: 'manifold watches for early signal beyond your projects: new ideas gaining trajectory before they are loud.',
   meta: 'always on',
   lane: 'horizon',
+  // A UI stand-in, not a manifold claim: no sources to cite, so its marker
+  // stays in the honest disabled state.
+  itemIds: [],
 };
 
 /** Guarantee a horizon card among the (max 3) displayed emerging cards. */
@@ -27,7 +31,7 @@ function emergingCards(emerging: EditionEmerging[]): EditionEmerging[] {
 
 /** The front page: welcome, lede, emerging themes, and where to start. */
 export function EditionView() {
-  const { edition, projectById, sendToManifold, markRead } = useStore();
+  const { edition, projectById, sendToManifold, markRead, openInFeeds } = useStore();
   const [applyOpen, setApplyOpen] = useState(false);
 
   if (!edition) {
@@ -79,11 +83,15 @@ export function EditionView() {
       {lede && (
         <>
           <div className="sp-kicker">{lede.kicker}</div>
-          <h1 className="sp-lede">{lede.title}</h1>
+          <h1 className="sp-lede">
+            {lede.title} <Citations ids={lede.itemIds} label="the lede" />
+          </h1>
           <p className="sp-deck">{lede.deck}</p>
           <div className="sp-why">
             <b>why this leads</b>
-            <p>{lede.why}</p>
+            <p>
+              {lede.why} <Citations ids={lede.itemIds} label="why this leads" />
+            </p>
           </div>
           <div className="sp-row">
             {applyProject && (
@@ -127,7 +135,15 @@ export function EditionView() {
             <span className={e.lane === 'horizon' ? 'sp-etag horizon' : 'sp-etag'}>{e.tag}</span>
             <div className="sp-etitle">{e.title}</div>
             <p className="sp-enote">{e.note}</p>
-            <span className="sp-emeta">{e.meta}</span>
+            {/* Live citation: manifold persists emerging[].itemIds
+                (manifold/src/editorial.ts; gate citation-ids-present). Older
+                editions written before that carry none and fall back to the
+                disabled marker. */}
+            <Citations
+              ids={e.itemIds}
+              label={e.title}
+              display={<span className="sp-emeta">{e.meta}</span>}
+            />
           </div>
         ))}
       </div>
@@ -158,6 +174,19 @@ export function EditionView() {
                   <span className="sp-shtitle">{r.title}</span>{' '}
                   <span className="sp-shnote">— {r.note}</span>
                 </div>
+              )}
+              {/* A Start Here row is a single article, so the row is its own
+                  external link; this adds the internal deep link into Feeds so
+                  the reader can park, mark read, or assign it without leaving. */}
+              {r.itemId && (
+                <button
+                  type="button"
+                  className="sp-cite-feeds"
+                  onClick={() => openInFeeds(r.itemId as string)}
+                  aria-label={`open ${r.title} in Feeds`}
+                >
+                  <span aria-hidden="true">⌃</span> Feeds
+                </button>
               )}
             </div>
           ))}

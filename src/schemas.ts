@@ -100,6 +100,7 @@ export const themeRowSchema = z
     mastery: masterySchema.nullish(),
     why: z.string().nullish(),
     reads: z.coerce.number().int().min(0).nullish(),
+    item_ids: z.array(z.string()).nullish(),
     created_at: iso.nullish(),
     updated_at: iso.nullish(),
   })
@@ -113,6 +114,7 @@ export const themeRowSchema = z
       mastery: r.mastery ?? 'unread',
       why: r.why ?? '',
       reads: r.reads ?? 0,
+      itemIds: r.item_ids ?? [],
       createdAt: r.created_at ?? '',
       updatedAt: r.updated_at ?? '',
     }),
@@ -157,6 +159,7 @@ const emergingSchema = z.object({
   note: z.string().default(''),
   meta: z.string().default(''),
   lane: laneSchema.default('horizon'),
+  item_ids: z.array(z.string()).nullish(),
 });
 
 const startHereSchema = z.object({
@@ -204,6 +207,7 @@ export const editionRowSchema = z
         note: e.note,
         meta: e.meta,
         lane: e.lane,
+        itemIds: e.item_ids ?? [],
       })),
       startHere: r.start_here.map((s) => ({
         itemId: s.item_id ?? null,

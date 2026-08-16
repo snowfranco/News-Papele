@@ -90,6 +90,24 @@ export function runGate(inputs: PassInputs, built: BuiltPass): GateResult {
   checks['cited-ids-exist'] = citationErrors.length === 0;
   errors.push(...citationErrors);
 
+  // ------------------------------------------------ citation ids present
+  // Every emerging entry and every theme must PERSIST at least one backing
+  // item id, so the cockpit renders a live citation rather than a dead
+  // marker. cited-ids-exist above checks the audit; this checks the rows
+  // actually written, so a future pass that stops carrying item_ids
+  // hard-fails here instead of silently shipping empty source sheets.
+  const presenceErrors: string[] = [];
+  edition.emerging.forEach((e, i) => {
+    if (!e.item_ids || e.item_ids.length === 0)
+      presenceErrors.push(`emerging[${i}] "${e.title}" persists no item_ids`);
+  });
+  for (const t of themes) {
+    if (!t.item_ids || t.item_ids.length === 0)
+      presenceErrors.push(`theme ${t.id} persists no item_ids`);
+  }
+  checks['citation-ids-present'] = presenceErrors.length === 0;
+  errors.push(...presenceErrors);
+
   // -------------------------------------------- emerging themes are written
   const themeIds = new Set(themes.map((t) => t.id));
   const themeRefErrors = edition.emerging

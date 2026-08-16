@@ -72,6 +72,10 @@ export interface Theme {
   mastery: Mastery;
   why: string;
   reads: number;
+  /** reading_items ids that formed this theme, so the theme map's detail
+   * panel can surface its sources. manifold persists at least one (gate:
+   * citation-ids-present); empty only for rows written before that gate. */
+  itemIds: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -110,6 +114,10 @@ export interface EditionEmerging {
   note: string;
   meta: string;
   lane: Lane;
+  /** reading_items ids backing this card, so the app can surface its
+   * sources. manifold persists at least one (gate: citation-ids-present);
+   * empty only for editions written before that gate existed. */
+  itemIds: string[];
 }
 
 export interface EditionRead {
@@ -219,6 +227,27 @@ export interface ReadingItem {
   publishedAt: string | null;
   origin: ReadingItemOrigin;
   imagePreview: string | null;
+}
+
+// ----------------------------------------------------------- citations
+
+/** One resolved source behind a manifold-authored claim, shown as a row in
+ * the citation source sheet (src/components/Citations.tsx). Derived at render
+ * time by joining a cited reading_items id back to its row and the source's
+ * color from context.sources.feeds; never persisted. */
+export interface CitationSource {
+  itemId: string;
+  title: string;
+  url: string | null;
+  /** Feed name (reading_items.source_feed), or null when unresolved. */
+  source: string | null;
+  /** Color chip from context.sources.feeds, matched by source name. */
+  sourceColor: string | null;
+  publishedAt: string | null;
+  read: boolean;
+  /** False when the cited id was not in the loaded reading_items window, so
+   * the sheet can be honest rather than invent a title. */
+  resolved: boolean;
 }
 
 // ------------------------------------------------------------- resources

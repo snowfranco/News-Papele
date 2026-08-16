@@ -44,6 +44,9 @@ export const emergingInsertSchema = z.object({
   note: z.string().min(1),
   meta: z.string().min(1),
   lane: laneSchema,
+  // At least one backing item so the app can surface the card's sources
+  // (gate: citation-ids-present).
+  item_ids: z.array(z.string().min(1)).min(1),
 });
 
 export const startHereInsertSchema = z.object({
@@ -75,6 +78,9 @@ export const themeUpsertSchema = z.object({
   mastery: masterySchema,
   why: z.string().min(1),
   reads: z.number().int().min(0),
+  // At least one backing item so the theme map's detail panel can surface
+  // the reads that formed the theme (gate: citation-ids-present).
+  item_ids: z.array(z.string().min(1)).min(1),
   created_at: isoTimestamp,
   updated_at: isoTimestamp,
 });
@@ -170,6 +176,8 @@ export function roundTripErrors(
     e.emerging.forEach((em, i) => {
       if (em.lane !== edition.emerging[i]?.lane) errors.push(`reader rewrote emerging[${i}].lane`);
       if (em.themeId !== edition.emerging[i]?.theme_id) errors.push(`reader rewrote emerging[${i}].theme_id`);
+      if ((em.itemIds ?? []).join(',') !== (edition.emerging[i]?.item_ids ?? []).join(','))
+        errors.push(`reader rewrote emerging[${i}].item_ids`);
     });
     if (e.startHere.length !== edition.start_here.length) errors.push('reader dropped start_here entries');
     e.startHere.forEach((s, i) => {
@@ -186,6 +194,8 @@ export function roundTripErrors(
     if (parsed.data.lane !== theme.lane) errors.push(`reader rewrote theme ${theme.id} lane`);
     if (parsed.data.mastery !== theme.mastery) errors.push(`reader rewrote theme ${theme.id} mastery`);
     if (parsed.data.heat !== theme.heat) errors.push(`reader rewrote theme ${theme.id} heat`);
+    if (parsed.data.itemIds.join(',') !== theme.item_ids.join(','))
+      errors.push(`reader rewrote theme ${theme.id} item_ids`);
   }
 
   for (const link of links) {

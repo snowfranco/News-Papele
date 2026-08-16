@@ -2,7 +2,7 @@
 // chronological (newest first), no editorial framing. A read/unread pill per
 // row and per-source item counts are inventory, never pressure — no unread
 // counters anywhere. One surface: menus and inline panels only, no modals.
-import { useMemo, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { mastheadDate } from '../lib/format';
 import { useStore } from '../state/AppStore';
 import type { ReadingItem, Theme } from '../types';
@@ -44,6 +44,8 @@ export function FeedsView() {
     refreshSources,
     refreshing,
     lastRefresh,
+    focusItemId,
+    setFocusItemId,
   } = useStore();
 
   // Local, unpersisted view state only.
@@ -53,6 +55,10 @@ export function FeedsView() {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [menuMode, setMenuMode] = useState<'list' | 'new'>('list');
   const [newTheme, setNewTheme] = useState('');
+  // Deep-link focus (?item= / "Open in Feeds"): scroll a row into view and
+  // flash it briefly, once.
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const feeds = useMemo(() => context?.sources.feeds ?? [], [context]);
 
@@ -104,6 +110,29 @@ export function FeedsView() {
     }
     return out;
   }, [visible]);
+
+  // Honor a Feeds deep link (focusItemId, set by "Open in Feeds" or ?item=):
+  // scroll the row into view and flash it. If the item is filtered out, relax
+  // the view so it can render; this effect then re-runs when groups change.
+  useEffect(() => {
+    if (!focusItemId) return;
+    const el = rowRefs.current.get(focusItemId);
+    if (!el) {
+      setSelectedFeedId(null);
+      setReadFilter('all');
+      setSearch('');
+      return;
+    }
+    const reduce =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    el.focus();
+    setHighlightId(focusItemId);
+    setFocusItemId(null);
+    const t = setTimeout(() => setHighlightId(null), 2200);
+    return () => clearTimeout(t);
+  }, [focusItemId, groups, setFocusItemId]);
 
   const closeMenu = () => {
     setMenuFor(null);
@@ -328,7 +357,11 @@ export function FeedsView() {
                 return (
                   <div
                     key={item.id}
-                    className={read ? 'sp-fdrow read' : 'sp-fdrow'}
+                    ref={(el) => {
+                      if (el) rowRefs.current.set(item.id, el);
+                      else rowRefs.current.delete(item.id);
+                    }}
+                    className={`sp-fdrow${read ? ' read' : ''}${highlightId === item.id ? ' flash' : ''}`}
                     tabIndex={0}
                     role="article"
                     aria-label={item.title}

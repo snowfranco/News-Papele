@@ -1393,3 +1393,255 @@ a.sp-fdtitle:hover {
     left: 0;
   }
 }
+
+/* ---------------------------------------------------------------- citations
+   The citation atom: a quiet footnote-style marker plus a source sheet, reused
+   across Edition, Theme map, and Position desk (src/components/Citations.tsx).
+   Broadsheet grammar: JetBrains Mono meta type, cobalt accent, hairline rules,
+   near-zero radius. Structural children are spans styled as blocks because a
+   marker lives inside <p>/<h1>, where a <div> descendant is invalid nesting. */
+.sp-cite {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.sp-cite-btn {
+  font-family: var(--font-code);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 1px 4px;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.sp-cite-btn:hover {
+  color: var(--cobalt);
+  border-color: var(--rule);
+}
+.sp-cite-btn:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 1px;
+}
+
+.sp-cite-mark {
+  font-family: var(--font-code);
+  font-size: 0.72em;
+  vertical-align: super;
+}
+
+.sp-cite.disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.75;
+}
+.sp-cite.disabled .sp-emeta {
+  border-bottom: 1px dotted var(--rule);
+}
+.sp-ecard .sp-cite {
+  align-self: flex-start;
+}
+
+/* Start Here internal deep-link affordance (EditionView). */
+.sp-cite-feeds {
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-left: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sp-cite-feeds:hover {
+  color: var(--cobalt);
+  border-color: var(--cobalt);
+}
+.sp-cite-feeds:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 1px;
+}
+
+/* Position desk: the progress bars and their (disabled) marker on one line. */
+.sp-progline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sp-progline .sp-prog {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* The source sheet: a desktop popover anchored under the marker. */
+.sp-citesheet {
+  display: block;
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 8px;
+  background: var(--card-solid);
+  border: 1px solid var(--glass-brd);
+  border-radius: 10px;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--blur);
+  text-align: left;
+  white-space: normal;
+}
+/* Flip to the marker's right edge when a left-anchored sheet would clip off
+   the viewport (set by Citations' layout measurement). */
+.sp-citesheet.align-right {
+  left: auto;
+  right: 0;
+}
+.sp-citehead {
+  display: block;
+  font-family: var(--font-code);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 2px 6px 8px;
+}
+.sp-citerow {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 6px;
+  border-top: 1px solid var(--rule);
+}
+.sp-citemain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.sp-citetitle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.sp-citemeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--muted);
+}
+.sp-citesrc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.sp-citechip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-block;
+}
+.sp-citeread {
+  color: var(--teal);
+}
+.sp-citeacts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: none;
+  align-items: flex-end;
+}
+.sp-citeact {
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--cobalt);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 3px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.sp-citeact:hover {
+  border-color: var(--cobalt);
+}
+.sp-citeact:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 1px;
+}
+
+/* Backdrop is desktop-invisible; it dims behind the mobile bottom sheet. */
+.sp-cite-backdrop {
+  display: none;
+}
+
+/* Feeds deep-link highlight (FeedsView focusItemId). */
+.sp-fdrow.flash {
+  background: rgba(37, 71, 240, 0.1);
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sp-citesheet {
+    animation: sp-cite-in 0.12s ease-out;
+  }
+  .sp-fdrow.flash {
+    animation: sp-cite-flash 2.2s ease-out;
+  }
+  @keyframes sp-cite-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes sp-cite-flash {
+    from {
+      background: rgba(37, 71, 240, 0.22);
+    }
+    to {
+      background: rgba(37, 71, 240, 0);
+    }
+  }
+}
+
+/* Mobile: the source sheet becomes a bottom sheet with a dimmed backdrop. */
+@media (max-width: 640px) {
+  .sp-cite-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(20, 18, 30, 0.34);
+  }
+  .sp-citesheet,
+  .sp-citesheet.align-right {
+    position: fixed;
+    z-index: 60;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
+    padding: 12px;
+  }
+}

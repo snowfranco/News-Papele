@@ -77,6 +77,9 @@ export function buildSeedEdition(items: ReadingItem[], welcomeName?: string): Ed
       note: `What ${source} has been publishing lately.`,
       meta: source,
       lane: 'horizon',
+      // The seed card cites the source's own fresh items, so its citation
+      // marker is live even before manifold has written an edition.
+      itemIds: list.slice(0, 3).map((it) => it.id),
     })),
     startHere,
     createdAt: now.toISOString(),
