@@ -8,7 +8,18 @@ import { Constellation, HORIZON_STAR_PATH } from './Constellation';
 import type { ConstellationSelection } from './Constellation';
 
 export function ThemeMapView() {
-  const { themes, themeLinks, context, sendToManifold, setView, setFocusThemeId } = useStore();
+  const {
+    themes,
+    themeLinks,
+    context,
+    sendToManifold,
+    setView,
+    setFocusThemeId,
+    resolveCitations,
+    openInFeeds,
+    markRead,
+    say,
+  } = useStore();
   const projects = context?.projects ?? [];
 
   const [selected, setSelected] = useState<ConstellationSelection | null>(null);
@@ -23,6 +34,57 @@ export function ThemeMapView() {
 
   const requestChart = () => {
     void sendToManifold('request-edition', 'chart my theme map');
+  };
+
+  /** "Read next" on a theme: open a real article the theme is built on, and
+   * file the read-next signal so manifold still weights this theme higher in
+   * the next edition. The button's label promises action, so it must do
+   * something visible; the signal alone is a note, not a read (the queue
+   * exists for asynchronous editorial work, not for interactive clicks).
+   *
+   * Uses the theme's persisted item_ids (themes gained an item_ids column in
+   * supabase/migrations/20260816000000_theme_item_ids.sql). Pre-migration
+   * themes carry none and gracefully degrade to the queue-only behavior with
+   * an honest toast; every branch also fires the outbox signal so the intent
+   * still flows to manifold. */
+  const readNext = (t: Theme) => {
+    // The signal always goes out, whether or not we can open an article now.
+    void sendToManifold('read-next', t.label, { themeId: t.id });
+
+    if (t.itemIds.length === 0) {
+      say('no reads recorded on this theme yet · filed for the next edition');
+      return;
+    }
+
+    const sources = resolveCitations(t.itemIds);
+    const withUrl = sources
+      .filter((s) => s.resolved && s.url)
+      .sort(
+        (a, b) => (Date.parse(b.publishedAt ?? '') || 0) - (Date.parse(a.publishedAt ?? '') || 0),
+      );
+
+    if (withUrl.length === 0) {
+      // Ids resolve to items with no url (unusual), or none resolve in the
+      // loaded window: send the reader to the Feeds bench focused on the
+      // first known id, so there is always somewhere useful to land.
+      const fallback = sources.find((s) => s.resolved) ?? sources[0];
+      if (fallback) openInFeeds(fallback.itemId);
+      say('opening the reads in Feeds · filed for the next edition');
+      return;
+    }
+
+    // Prefer the freshest unread piece; if the reader has already read all of
+    // them, open the freshest anyway (rereading is a legitimate move) and
+    // toast the truth.
+    const unread = withUrl.find((s) => !s.read);
+    const target = unread ?? withUrl[0]!;
+    window.open(target.url as string, '_blank', 'noopener,noreferrer');
+    markRead(target.itemId);
+    say(
+      unread
+        ? 'opened the next read · filed for manifold'
+        : 'you have read them all · opened the freshest, filed for the next edition',
+    );
   };
 
   if (themes.length === 0 && projects.length === 0) {
@@ -173,12 +235,7 @@ export function ThemeMapView() {
                 </p>
               )}
               <div className="sp-acts">
-                <button
-                  className="sp-mini"
-                  onClick={() =>
-                    void sendToManifold('read-next', theme.label, { themeId: theme.id })
-                  }
-                >
+                <button className="sp-mini" onClick={() => readNext(theme)}>
                   Read next
                 </button>
                 <button className="sp-mini" onClick={() => draftPosition(theme)}>
