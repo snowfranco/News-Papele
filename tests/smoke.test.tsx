@@ -2,7 +2,7 @@
 // and walks the skeleton end to end — masthead, edition, theme map, position
 // desk, command bar, outbox. Per-view suites arrive in Phase 2.
 import { StrictMode } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../src/App';
 import { StoreProvider } from '../src/state/AppStore';
@@ -578,5 +578,70 @@ describe('citations', () => {
     expect(
       screen.getByRole('button', { name: 'open A field guide to context windows in Feeds' }),
     ).toBeInTheDocument();
+  });
+});
+
+// ------------------------------------------------------ theme map: read next
+//
+// The "Read next" button on the theme detail must do what its label says: open
+// a real article the theme is built on, not only file a signal into the outbox
+// (src/views/ThemeMapView.tsx readNext).
+
+describe('theme map read-next', () => {
+  it('opens the freshest unread backing article, marks it read, and still files the signal', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    try {
+      renderApp();
+      await screen.findByText(LEDE_TITLE);
+      await userEvent.click(screen.getByRole('tab', { name: 'Theme map' }));
+
+      // Select the theme by its constellation button (g[role=button]).
+      // fireEvent (not userEvent) so d3-drag's mousedown handler is not
+      // invoked, since happy-dom does not implement SVGPoint.matrixTransform.
+      fireEvent.click(screen.getByRole('button', { name: 'context engineering' }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Read next' }));
+
+      // The freshest unread backing item (i1) opens in a new tab and is
+      // marked read (round-trips through article_read_states).
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://example.com/a',
+        '_blank',
+        expect.stringContaining('noopener'),
+      );
+      expect(db.setReadState).toHaveBeenCalledWith('i1', true);
+
+      // The read-next signal still fires so manifold keeps weighting the theme.
+      expect(db.queueOutbox).toHaveBeenCalledWith('read-next', 'context engineering', {
+        themeId: 'th-position',
+      });
+    } finally {
+      openSpy.mockRestore();
+    }
+  });
+
+  it('opens the freshest read anyway when every backing item is already read', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    try {
+      renderApp();
+      await screen.findByText(LEDE_TITLE);
+      await userEvent.click(screen.getByRole('tab', { name: 'Theme map' }));
+
+      // th-horizon carries itemIds ['i3'], and i3 arrives read via readStates.
+      fireEvent.click(screen.getByRole('button', { name: 'small models' }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Read next' }));
+
+      // Rereading is a legitimate move: the button still opens something,
+      // rather than silently no-op'ing.
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://example.com/d',
+        '_blank',
+        expect.stringContaining('noopener'),
+      );
+      expect(db.queueOutbox).toHaveBeenCalledWith('read-next', 'small models', {
+        themeId: 'th-horizon',
+      });
+    } finally {
+      openSpy.mockRestore();
+    }
   });
 });
