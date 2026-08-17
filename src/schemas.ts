@@ -7,6 +7,7 @@ import type {
   AppContext,
   AssignToThemePayload,
   Edition,
+  ManifoldReply,
   OutboxItem,
   ParkItemPayload,
   Position,
@@ -243,6 +244,30 @@ export const positionRowSchema = z
       status: r.status,
       createdAt: r.created_at ?? '',
       publishedAt: r.published_at ?? null,
+    }),
+  );
+
+// -------------------------------------------------------- manifold replies
+
+export const manifoldReplyRowSchema = z
+  .object({
+    id: z.string(),
+    position_id: z.string().min(1),
+    kind: z.enum(['devils_advocate']).catch('devils_advocate'),
+    title: z.string().default(''),
+    body: z.string().default(''),
+    item_ids: z.array(z.string()).nullish(),
+    created_at: iso.nullish(),
+  })
+  .transform(
+    (r): ManifoldReply => ({
+      id: r.id,
+      positionId: r.position_id,
+      kind: r.kind,
+      title: r.title,
+      body: r.body,
+      itemIds: r.item_ids ?? [],
+      createdAt: r.created_at ?? '',
     }),
   );
 

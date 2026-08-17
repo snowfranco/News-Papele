@@ -8,9 +8,18 @@
 import { loadConfig } from './env.ts';
 import { makeSupabase } from './supabase.ts';
 import { makeClaude } from './claude.ts';
-import { fetchPassInputs, fetchQueuedOutbox, viableItems } from './inputs.ts';
+import {
+  fetchColumnPositions,
+  fetchManifoldReplies,
+  fetchPassInputs,
+  fetchQueuedOutbox,
+  fetchReplyCorpus,
+  viableItems,
+} from './inputs.ts';
 import { runEditorialPass } from './run.ts';
-import { writePass } from './writer.ts';
+import { runReplyGate } from './gate.ts';
+import { runDevilsAdvocatePass, type ReplyInputs } from './devils_advocate.ts';
+import { writePass, writeReply } from './writer.ts';
 import { writeRunReport } from './report.ts';
 import { processOutbox } from './outbox.ts';
 
@@ -165,14 +174,106 @@ async function outboxCommand(args: string[]): Promise<number> {
   return failures > 0 ? 1 : 0;
 }
 
+async function devilsAdvocateCommand(args: string[]): Promise<number> {
+  const config = loadConfig();
+  if (option(args, '--model')) config.model = option(args, '--model') as string;
+  if (option(args, '--max-attempts')) config.maxAttempts = Number(option(args, '--max-attempts'));
+  const dryRun = flag(args, '--dry-run');
+
+  const sb = makeSupabase(config);
+  const claude = makeClaude(config.model, config.anthropicApiKey);
+  if (config.anonFallback) {
+    console.warn(
+      'manifold: running on the anon key (SUPABASE_SERVICE_ROLE_KEY unset). Works while RLS is allow-all; set the service key for anything real.',
+    );
+  }
+
+  console.log(`manifold: gathering columns and existing replies from ${config.supabaseUrl} ...`);
+  const [columns, replies, items] = await Promise.all([
+    fetchColumnPositions(sb),
+    fetchManifoldReplies(sb),
+    fetchReplyCorpus(sb, config.itemCap),
+  ]);
+
+  const answered = new Set(replies.filter((r) => r.kind === 'devils_advocate').map((r) => r.positionId));
+  const pending = columns.filter((c) => !answered.has(c.id));
+  console.log(
+    `manifold: ${columns.length} column(s), ${answered.size} already answered, ${pending.length} pending, ${items.length} corpus items.`,
+  );
+  if (pending.length === 0) {
+    console.log('manifold: nothing to push back on. Done.');
+    return 0;
+  }
+  if (items.length === 0) {
+    console.error(
+      'manifold: corpus empty; a devils-advocate reply must cite reading_items. Nothing written.',
+    );
+    return 1;
+  }
+
+  let failures = 0;
+  for (const column of pending) {
+    const input: ReplyInputs = {
+      positionId: column.id,
+      positionTitle: column.title,
+      positionBody: column.body,
+      themeLabel: null,
+      items,
+      nowIso: new Date().toISOString(),
+    };
+    console.log(`manifold: composing devils-advocate reply for "${column.title}" (${column.id}) on ${claude.describe()} ...`);
+    let result;
+    try {
+      result = await runDevilsAdvocatePass(input, claude, (built, ctx) => runReplyGate(ctx, built), config.maxAttempts);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`manifold: model transport failed for ${column.id}: ${msg}`);
+      failures++;
+      continue;
+    }
+
+    if (!result.ok || !result.built) {
+      console.error(`manifold: gate REJECTED the reply for ${column.id} after ${result.attempts.length} attempt(s). Nothing written for this column.`);
+      for (const err of result.attempts.at(-1)?.errors.slice(0, 6) ?? []) console.error(`  - ${err}`);
+      failures++;
+      continue;
+    }
+
+    if (dryRun) {
+      console.log(`manifold: dry run, gate passed for ${column.id}, nothing written.`);
+      continue;
+    }
+
+    try {
+      await writeReply(sb, result.built);
+      console.log(`manifold: wrote devils-advocate reply for ${column.id}.`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // The unique (position_id, kind) constraint is the idempotency backstop
+      // (23505): a concurrent run that landed the reply first is not a failure.
+      if (/23505/.test(msg)) {
+        console.log(`manifold: reply for ${column.id} already exists (concurrent run); skipping.`);
+        continue;
+      }
+      console.error(`manifold: Supabase write failed for ${column.id}: ${msg}`);
+      failures++;
+    }
+  }
+
+  return failures > 0 ? 1 : 0;
+}
+
 const [, , command, ...rest] = process.argv;
 
 try {
   let code: number;
   if (command === 'edition') code = await editionCommand(rest);
   else if (command === 'outbox') code = await outboxCommand(rest);
+  else if (command === 'devils-advocate') code = await devilsAdvocateCommand(rest);
   else {
-    console.error('usage: tsx manifold/src/cli.ts <edition|outbox> [--dry-run] [--model <id>] [--max-attempts N]');
+    console.error(
+      'usage: tsx manifold/src/cli.ts <edition|outbox|devils-advocate> [--dry-run] [--model <id>] [--max-attempts N]',
+    );
     code = 2;
   }
   process.exit(code);

@@ -8,7 +8,12 @@
 //      the real thing now, not a vendored copy), with spot checks that salvage
 //      did not silently rewrite a value.
 import { z } from 'zod';
-import { editionRowSchema, themeLinkRowSchema, themeRowSchema } from './app-contract.ts';
+import {
+  editionRowSchema,
+  manifoldReplyRowSchema,
+  themeLinkRowSchema,
+  themeRowSchema,
+} from './app-contract.ts';
 
 // ------------------------------------------------------------ shared bits
 
@@ -94,6 +99,51 @@ export const themeLinkInsertSchema = z.object({
 export type EditionInsert = z.infer<typeof editionInsertSchema>;
 export type ThemeUpsert = z.infer<typeof themeUpsertSchema>;
 export type ThemeLinkInsert = z.infer<typeof themeLinkInsertSchema>;
+
+// ---------------------------------------------------- manifold reply insert
+
+/** The devils-advocate row manifold writes to public.manifold_replies. Every
+ * claim in the body must trace to a cited reading_items id (gate:
+ * reply-citation-ids-present). Kind is a union so a later manifold-authored
+ * reply reuses the same table without another migration. */
+export const manifoldReplyInsertSchema = z.object({
+  position_id: z.string().uuid(),
+  kind: z.enum(['devils_advocate']),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  item_ids: z.array(z.string().min(1)).min(1),
+});
+
+export type ManifoldReplyInsert = z.infer<typeof manifoldReplyInsertSchema>;
+
+/** Round-trip a would-be reply through the app's reader schema to catch
+ * salvage drift (a value the reader only accepts thanks to .catch()/.default()
+ * is a contract slip the reader would never see). */
+export function replyRoundTripErrors(reply: ManifoldReplyInsert): string[] {
+  const errors: string[] = [];
+  const parsed = manifoldReplyRowSchema.safeParse({
+    // The DB generates the id at write time; the reader schema needs a
+    // placeholder to run.
+    id: 'pending',
+    position_id: reply.position_id,
+    kind: reply.kind,
+    title: reply.title,
+    body: reply.body,
+    item_ids: reply.item_ids,
+    created_at: new Date(0).toISOString(),
+  });
+  if (!parsed.success) {
+    errors.push(`app reader rejects reply: ${parsed.error.issues[0]?.message}`);
+    return errors;
+  }
+  if (parsed.data.kind !== reply.kind) errors.push('reader rewrote reply.kind');
+  if (parsed.data.positionId !== reply.position_id) errors.push('reader rewrote reply.position_id');
+  if (parsed.data.title !== reply.title) errors.push('reader rewrote reply.title');
+  if (parsed.data.body !== reply.body) errors.push('reader rewrote reply.body');
+  if (parsed.data.itemIds.join(',') !== reply.item_ids.join(','))
+    errors.push('reader rewrote reply.item_ids');
+  return errors;
+}
 
 // ----------------------------------------------------- model output shape
 

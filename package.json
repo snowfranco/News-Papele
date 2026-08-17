@@ -16,6 +16,8 @@
     "manifold:edition:dry": "tsx manifold/src/cli.ts edition --dry-run",
     "manifold:sweep": "tsx manifold/src/cli.ts outbox",
     "manifold:sweep:dry": "tsx manifold/src/cli.ts outbox --dry-run",
+    "manifold:devils-advocate": "tsx manifold/src/cli.ts devils-advocate",
+    "manifold:devils-advocate:dry": "tsx manifold/src/cli.ts devils-advocate --dry-run",
     "manifold:evals": "tsx manifold/evals/runner.ts",
     "manifold:evals:bless": "tsx manifold/evals/runner.ts --bless",
     "manifold:evals:ci": "vitest run --config manifold/vitest.config.ts",

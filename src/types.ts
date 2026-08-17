@@ -162,6 +162,28 @@ export interface Position {
   publishedAt: string | null;
 }
 
+// -------------------------------------------------------- manifold replies
+
+/** manifold-authored response to a reader Position. Today the only writer is
+ * the devils-advocate pass (manifold/src/devils_advocate.ts): when the reader
+ * publishes a column, manifold composes one cited counter-argument. The kind
+ * union keeps room for a later manifold-authored reply (agreement, follow-up)
+ * without another migration. */
+export type ManifoldReplyKind = 'devils_advocate';
+
+export interface ManifoldReply {
+  id: string;
+  positionId: string;
+  kind: ManifoldReplyKind;
+  title: string;
+  body: string;
+  /** reading_items ids backing every claim in the reply. manifold persists at
+   * least one (gate: reply-citation-ids-present); rendered by the shared
+   * Citations atom on the Position Desk. */
+  itemIds: string[];
+  createdAt: string;
+}
+
 // ----------------------------------------------------------------- outbox
 
 export type OutboxKind =

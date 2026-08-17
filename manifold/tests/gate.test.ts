@@ -11,7 +11,8 @@
 // gate is covered by fast deterministic tests.
 import { describe, it, expect } from 'vitest';
 import { buildFromModel } from '../src/editorial.ts';
-import { runGate } from '../src/gate.ts';
+import { runGate, runReplyGate } from '../src/gate.ts';
+import { buildReplyFromModel, type ReplyInputs, type ReplyModelOutput } from '../src/devils_advocate.ts';
 import type { ModelOutput } from '../src/contract.ts';
 import type { PassInputs } from '../src/inputs.ts';
 import type { ReadingItem } from '../src/app-contract.ts';
@@ -169,6 +170,72 @@ describe('manifold deterministic gate', () => {
     built.themes[0]!.item_ids = [];
     const gate = runGate(inputs, built);
     expect(gate.checks['citation-ids-present']).toBe(false);
+    expect(gate.pass).toBe(false);
+  });
+});
+
+// The devils-advocate reply gate mirrors the editorial gate's citations rule:
+// a manifold-authored claim without cited reading_items ids never ships. These
+// tests keep that invariant honest as new checks are added.
+
+function replyInputs(overrides: Partial<ReplyInputs> = {}): ReplyInputs {
+  return {
+    positionId: '00000000-0000-0000-0000-000000000001',
+    positionTitle: 'Self-curated memory is where agents earn trust',
+    positionBody: 'Once agents write their own memory the reader stops caring about retrieval.',
+    themeLabel: 'Agent-curated memory',
+    items: [
+      item('a', 'Agents learn to curate their own memory', 'Teams report agent-curated memory files.', 'The AI Flow'),
+      item('b', 'A benchmark for long-horizon agent tasks', 'Self-curated memory beats retrieval on long tasks.', 'Dept of Product'),
+    ],
+    nowIso: NOW,
+    ...overrides,
+  };
+}
+
+function replyOutput(): ReplyModelOutput {
+  return {
+    title: 'Curated memory is a moat only until the corpus shifts',
+    body: 'Both cited pieces describe agent-curated memory as an early pattern, not a settled interface, so treating it as trust-earning today skips the corpus turnover that would break the moat next quarter.',
+    item_ids: ['a', 'b'],
+  };
+}
+
+describe('manifold devils-advocate reply gate', () => {
+  it('passes a clean reply on every check', () => {
+    const input = replyInputs();
+    const built = buildReplyFromModel(input, replyOutput());
+    const gate = runReplyGate(input, built);
+    expect(gate.pass).toBe(true);
+    expect(gate.checks['reply-citation-ids-present']).toBe(true);
+    expect(gate.checks['schema-valid']).toBe(true);
+    expect(gate.checks['app-contract-round-trip']).toBe(true);
+  });
+
+  it('fails reply-citation-ids-present when the reply persists no item ids', () => {
+    const input = replyInputs();
+    const built = buildReplyFromModel(input, replyOutput());
+    built.insert.item_ids = [];
+    const gate = runReplyGate(input, built);
+    expect(gate.checks['reply-citation-ids-present']).toBe(false);
+    expect(gate.pass).toBe(false);
+  });
+
+  it('fails cited-ids-exist when the reply cites an item not in the corpus', () => {
+    const input = replyInputs();
+    const built = buildReplyFromModel(input, replyOutput());
+    built.insert.item_ids = ['does-not-exist'];
+    const gate = runReplyGate(input, built);
+    expect(gate.checks['cited-ids-exist']).toBe(false);
+    expect(gate.pass).toBe(false);
+  });
+
+  it('fails no-shame-body when the reply body mentions the backlog', () => {
+    const input = replyInputs();
+    const built = buildReplyFromModel(input, replyOutput());
+    built.insert.body = 'Your unread pile is already backlog on this beat, so the column overstates the trust curve.';
+    const gate = runReplyGate(input, built);
+    expect(gate.checks['no-shame-body']).toBe(false);
     expect(gate.pass).toBe(false);
   });
 });

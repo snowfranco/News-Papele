@@ -6,6 +6,7 @@
 import {
   contextRowSchema,
   editionRowSchema,
+  manifoldReplyRowSchema,
   outboxRowSchema,
   parseRows,
   positionRowSchema,
@@ -17,6 +18,7 @@ import type {
   AppContext,
   Edition,
   FeedSource,
+  ManifoldReply,
   OutboxItem,
   OutboxKind,
   Position,
@@ -193,6 +195,17 @@ export async function publishPosition(id: string): Promise<void> {
     body: { status: 'published', published_at: new Date().toISOString() },
     prefer: 'return=minimal',
   });
+}
+
+// -------------------------------------------------------- manifold replies
+
+export async function getManifoldReplies(): Promise<ManifoldReply[]> {
+  return readTable(
+    'manifold_replies',
+    '/manifold_replies?order=created_at.desc&limit=200',
+    (rows) => parseRows(rows, manifoldReplyRowSchema, 'manifold_replies'),
+    [],
+  );
 }
 
 // ----------------------------------------------------------------- outbox

@@ -1,6 +1,7 @@
 // Supabase writes, only ever called with a gate-passed BuiltPass. Order
 // matters: themes, then links, then the edition, so a reader never sees an
 // edition that references themes which are not there yet.
+import type { BuiltReply } from './devils_advocate.ts';
 import type { BuiltPass } from './editorial.ts';
 import type { SupabaseClient } from './supabase.ts';
 
@@ -50,4 +51,16 @@ export async function writePass(sb: SupabaseClient, built: BuiltPass): Promise<W
     themesDecayed: built.decayed.length,
     linksInserted: built.links.length,
   };
+}
+
+/** Insert one gate-passed devils-advocate reply. The unique (position_id, kind)
+ * constraint on manifold_replies makes reruns idempotent: a second insert for
+ * a column that already has one hits the constraint and fails at PostgREST,
+ * which the caller treats as "already answered, skip". */
+export async function writeReply(sb: SupabaseClient, built: BuiltReply): Promise<void> {
+  await sb.fetch('/manifold_replies', {
+    method: 'POST',
+    body: [built.insert],
+    prefer: 'return=minimal',
+  });
 }

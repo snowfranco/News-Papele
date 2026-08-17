@@ -4,11 +4,14 @@
 // gates real runs" is one code path, not two.
 import {
   editionInsertSchema,
+  manifoldReplyInsertSchema,
+  replyRoundTripErrors,
   roundTripErrors,
   shameFree,
   themeLinkInsertSchema,
   themeUpsertSchema,
 } from './contract.ts';
+import type { BuiltReply, ReplyInputs } from './devils_advocate.ts';
 import type { BuiltPass } from './editorial.ts';
 import type { PassInputs } from './inputs.ts';
 
@@ -253,4 +256,58 @@ export function runGate(inputs: PassInputs, built: BuiltPass): GateResult {
   errors.push(...projectErrors);
 
   return { pass: errors.length === 0, errors, warnings: [...built.warnings], checks };
+}
+
+// ------------------------------------------------------------- reply gate
+//
+// The devils-advocate pass (manifold/src/devils_advocate.ts) produces one
+// manifold_replies row per column; runReplyGate is the write gate for that
+// path, mirroring runGate's shape (per-check outcomes, first-issue errors)
+// but scoped to the single row. reply-citation-ids-present hard-fails when
+// the row would ship without any backing item ids, so an uncited manifold
+// claim can never reach the Position Desk.
+
+export function runReplyGate(input: ReplyInputs, built: BuiltReply): GateResult {
+  const errors: string[] = [];
+  const checks: Record<string, boolean> = {};
+  const inputIds = new Set(input.items.map((i) => i.id));
+  const { insert } = built;
+
+  // ------------------------------------------------------- schema validity
+  const schemaParse = manifoldReplyInsertSchema.safeParse(insert);
+  const schemaErrors: string[] = [];
+  if (!schemaParse.success) {
+    for (const issue of schemaParse.error.issues.slice(0, 5)) {
+      schemaErrors.push(`reply.${issue.path.join('.')}: ${issue.message}`);
+    }
+  }
+  checks['schema-valid'] = schemaErrors.length === 0;
+  errors.push(...schemaErrors);
+
+  // ------------------------------------------------ app-contract round trip
+  const rtErrors = replyRoundTripErrors(insert);
+  checks['app-contract-round-trip'] = rtErrors.length === 0;
+  errors.push(...rtErrors);
+
+  // -------------------------------------------------------- cited ids exist
+  const missing = insert.item_ids.filter((id) => !inputIds.has(id));
+  checks['cited-ids-exist'] = missing.length === 0;
+  for (const id of missing) errors.push(`reply cites unknown item ${id}`);
+
+  // ------------------------------------------- reply citation ids present
+  // Every manifold-authored reply must PERSIST at least one backing id, so
+  // the Position Desk renders a live citation rather than a dead marker.
+  // schema-valid already requires .min(1); this check is named so the
+  // report and the fixture surface it explicitly, matching the editorial
+  // gate's citation-ids-present check.
+  checks['reply-citation-ids-present'] = insert.item_ids.length > 0;
+  if (insert.item_ids.length === 0) errors.push('reply persists no item_ids');
+
+  // ---------------------------------------------------------------- tone
+  const toneErrors: string[] = [];
+  if (!shameFree(insert.body)) toneErrors.push('reply body mentions the backlog or unread pile');
+  checks['no-shame-body'] = toneErrors.length === 0;
+  errors.push(...toneErrors);
+
+  return { pass: errors.length === 0, errors, warnings: [], checks };
 }

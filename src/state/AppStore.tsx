@@ -22,6 +22,7 @@ import type {
   AppContext,
   CitationSource,
   Edition,
+  ManifoldReply,
   OutboxItem,
   OutboxKind,
   Position,
@@ -42,6 +43,7 @@ export interface AppStore {
   themes: Theme[];
   themeLinks: ThemeLink[];
   positions: Position[];
+  manifoldReplies: ManifoldReply[];
   outbox: OutboxItem[];
   readingItems: ReadingItem[];
   readStates: Record<string, boolean>;
@@ -137,6 +139,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [themeLinks, setThemeLinks] = useState<ThemeLink[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [manifoldReplies, setManifoldReplies] = useState<ManifoldReply[]>([]);
   const [outbox, setOutbox] = useState<OutboxItem[]>([]);
   const [readingItems, setReadingItems] = useState<ReadingItem[]>([]);
   const [readStates, setReadStates] = useState<Record<string, boolean>>({});
@@ -260,6 +263,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setThemes(demo.themes);
       setThemeLinks(demo.themeLinks);
       setPositions(demo.positions);
+      setManifoldReplies(demo.manifoldReplies);
       setReadingItems(demo.readingItems);
       setReadStates(demo.readStates);
       setLoading(false);
@@ -320,11 +324,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setContext(ctx);
 
       // 2. Everything else in parallel.
-      const [ed, th, links, pos, out, items, reads] = await Promise.all([
+      const [ed, th, links, pos, replies, out, items, reads] = await Promise.all([
         db.getLatestEdition(),
         db.getThemes(),
         db.getThemeLinks(),
         db.getPositions(),
+        db.getManifoldReplies(),
         db.getQueuedOutbox(),
         db.getReadingItems(),
         db.getReadStates(),
@@ -333,6 +338,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setThemes(th);
       setThemeLinks(links);
       setPositions(pos);
+      setManifoldReplies(replies);
       setOutbox(out);
       setReadingItems(items);
       setReadStates(reads);
@@ -622,6 +628,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       themes,
       themeLinks,
       positions,
+      manifoldReplies,
       outbox,
       readingItems,
       readStates,
@@ -656,6 +663,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       themes,
       themeLinks,
       positions,
+      manifoldReplies,
       outbox,
       readingItems,
       readStates,

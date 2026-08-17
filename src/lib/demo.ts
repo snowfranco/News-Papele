@@ -2,7 +2,15 @@
 // in-memory preview of a populated cockpit (what the views look like once
 // manifold writes real editions and themes). Nothing here touches Supabase
 // and nothing is persisted. The copy is honest about being a demo.
-import type { AppContext, Edition, Position, ReadingItem, Theme, ThemeLink } from '../types';
+import type {
+  AppContext,
+  Edition,
+  ManifoldReply,
+  Position,
+  ReadingItem,
+  Theme,
+  ThemeLink,
+} from '../types';
 
 export interface DemoData {
   context: AppContext;
@@ -10,6 +18,7 @@ export interface DemoData {
   themes: Theme[];
   themeLinks: ThemeLink[];
   positions: Position[];
+  manifoldReplies: ManifoldReply[];
   readingItems: ReadingItem[];
   readStates: Record<string, boolean>;
 }
@@ -215,12 +224,29 @@ export function buildDemoData(): DemoData {
     demoItem(6, 'an ai engineering blog', 'Small local models change the privacy default', 'Capable models on laptops make private-by-default products practical.', hoursAgo(102)),
   ];
 
+  // manifold's cited pushback on the published column, mirroring what the
+  // devils-advocate pass writes to public.manifold_replies at runtime
+  // (manifold/src/devils_advocate.ts). The demo picks two corpus items so the
+  // Citations atom on the reply has real rows to resolve.
+  const manifoldReplies: ManifoldReply[] = [
+    {
+      id: 'demo-reply-1',
+      positionId: 'demo-p1',
+      kind: 'devils_advocate',
+      title: 'Eval sets calcify the same way specs did',
+      body: 'Both cited pieces describe evals as a live definition; taken further, an eval set frozen for a quarter becomes another document the team ships against, and the "living" claim rests on ceremony the team may not sustain.',
+      itemIds: ['demo-item-1', 'demo-item-2'],
+      createdAt: daysAgo(6),
+    },
+  ];
+
   return {
     context,
     edition,
     themes,
     themeLinks,
     positions,
+    manifoldReplies,
     readingItems,
     readStates: { 'demo-item-3': true, 'demo-item-5': true },
   };

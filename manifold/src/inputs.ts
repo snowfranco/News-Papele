@@ -5,15 +5,19 @@
 import {
   contextRowSchema,
   editionRowSchema,
+  manifoldReplyRowSchema,
   outboxRowSchema,
   parseRows,
+  positionRowSchema,
   readingItemRowSchema,
   themeLinkRowSchema,
   themeRowSchema,
 } from './app-contract.ts';
 import type {
   AppContext,
+  ManifoldReply,
   OutboxItem,
+  Position,
   ReadingItem,
   Theme,
   ThemeLink,
@@ -138,4 +142,40 @@ export async function fetchPassInputs(sb: SupabaseClient, config: ManifoldConfig
 export async function fetchQueuedOutbox(sb: SupabaseClient): Promise<OutboxItem[]> {
   const rows = await sb.fetch<unknown[]>('/outbox?status=eq.queued&order=created_at.asc&limit=100');
   return parseRows(rows, outboxRowSchema, 'outbox');
+}
+
+/** Columns manifold's devils-advocate pass considers. Both draft and published
+ * are eligible: sending a draft "for challenge" already asks for the pushback,
+ * so the reply lands before publish rather than after. */
+export async function fetchColumnPositions(sb: SupabaseClient): Promise<Position[]> {
+  const rows = await sb.fetch<unknown[]>(
+    '/positions?kind=eq.column&order=created_at.desc&limit=200',
+  );
+  return parseRows(rows, positionRowSchema, 'positions');
+}
+
+/** Existing devils-advocate replies (any kind), so the pass skips columns it
+ * already answered. The unique (position_id, kind) constraint is the backstop;
+ * this read is the polite skip. */
+export async function fetchManifoldReplies(sb: SupabaseClient): Promise<ManifoldReply[]> {
+  const rows = await sb.fetch<unknown[]>('/manifold_replies?limit=500');
+  return parseRows(rows, manifoldReplyRowSchema, 'manifold_replies');
+}
+
+/** Recent reading_items with read flags joined, so the devils-advocate pass
+ * uses the same corpus shape as the editorial pass. */
+export async function fetchReplyCorpus(sb: SupabaseClient, cap: number): Promise<ReadingItem[]> {
+  const [itemRows, readStateRows] = await Promise.all([
+    sb.fetch<unknown[]>(`/reading_items?order=added_at.desc&limit=${cap * 2}`),
+    sb.fetch<{ article_id?: string; read?: boolean }[]>('/article_read_states?limit=1000'),
+  ]);
+  const readMap = new Map<string, boolean>();
+  for (const row of readStateRows) {
+    if (row.article_id) readMap.set(row.article_id, row.read ?? false);
+  }
+  const items = parseRows(itemRows, readingItemRowSchema, 'reading_items').map((i) => ({
+    ...i,
+    read: readMap.get(i.id) ?? i.read,
+  }));
+  return selectItems(items, cap, new Date().toISOString());
 }

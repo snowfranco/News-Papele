@@ -698,6 +698,51 @@ button {
   margin-bottom: 12px;
 }
 
+/* manifold's devil's-advocate reply, rendered next to each column that has
+ * one (src/views/PositionDeskView.tsx ManifoldReplyCard). Argument first, then
+ * the shared citation marker (src/components/Citations.tsx) opens the sources. */
+.sp-reply {
+  background: var(--card);
+  border: 1px solid var(--glass-brd);
+  border-left: 3px solid var(--cobalt);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+  padding: 12px 14px;
+  margin: 6px 0 14px;
+  max-width: 680px;
+}
+
+.sp-reply-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.sp-reply-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+
+.sp-reply-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.sp-reply-body {
+  font-size: 14px;
+  color: var(--ink2);
+  margin: 0;
+  line-height: 1.55;
+}
+
 .sp-challenge h3 {
   font-family: var(--font-display);
   font-size: 18px;

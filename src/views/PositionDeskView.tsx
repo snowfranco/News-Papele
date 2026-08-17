@@ -7,7 +7,7 @@ import { Citations } from '../components/Citations';
 import { POSITION_READY_READS } from '../config';
 import { shortDate } from '../lib/format';
 import { useStore } from '../state/AppStore';
-import type { PositionKind, Theme } from '../types';
+import type { ManifoldReply, PositionKind, Theme } from '../types';
 
 const CHALLENGES: { kind: PositionKind; title: string; blurb: string }[] = [
   {
@@ -53,6 +53,7 @@ export function PositionDeskView() {
   const {
     themes,
     positions,
+    manifoldReplies,
     focusThemeId,
     setFocusThemeId,
     recordPosition,
@@ -60,6 +61,15 @@ export function PositionDeskView() {
     sendToManifold,
     say,
   } = useStore();
+
+  // Index the manifold-authored replies by position so each column can render
+  // its own pushback (public.manifold_replies is unique on position_id + kind,
+  // so the last-write-wins here mirrors the DB rule).
+  const replyByPositionId = useMemo(() => {
+    const m = new Map<string, ManifoldReply>();
+    for (const r of manifoldReplies) if (r.kind === 'devils_advocate') m.set(r.positionId, r);
+    return m;
+  }, [manifoldReplies]);
 
   const theme = useMemo(() => {
     if (themes.length === 0) return null;
@@ -235,15 +245,13 @@ export function PositionDeskView() {
       </div>
       {advocateOpen && (
         <div className="sp-applybox">
-          {/* [CONTRACT-NOTE] manifold's own devil's-advocate counter-argument
-              is not persisted or rendered yet: the only rebuttal shown here is
-              the reader's own steelman below. When manifold writes its pushback
-              (e.g. a manifold-authored position with cited ids), it should carry
-              a citation marker like every other manifold claim. Separate
-              follow-up in Mission Control. */}
+          {/* manifold's cited counter-argument lands per column in
+              public.manifold_replies (kind='devils_advocate'); the reader sees it
+              rendered below with the shared Citations atom the moment the pass
+              writes it (manifold/src/devils_advocate.ts). */}
           <p>
             Before this goes out: what is the strongest case against it? manifold will push back
-            on its next run. You can answer now or let it come to you.
+            on its next run with a cited counter-argument. You can answer now or let it come to you.
           </p>
           <textarea
             className="sp-textarea"
@@ -270,16 +278,21 @@ export function PositionDeskView() {
           <div className="sp-kicker">drafts at the challenge desk</div>
           <div className="sp-pubs">
             {columnDrafts.map((p) => (
-              <div className="sp-pub" key={p.id}>
-                <span className="sp-pubt">{p.title}</span>
-                <span
-                  style={{ display: 'inline-flex', gap: 10, alignItems: 'center', flexShrink: 0 }}
-                >
-                  <span className="sp-pubd">awaiting devil's advocate</span>
-                  <button className="sp-mini" onClick={() => void promoteDraft(p.id)}>
-                    Publish now
-                  </button>
-                </span>
+              <div key={p.id}>
+                <div className="sp-pub">
+                  <span className="sp-pubt">{p.title}</span>
+                  <span
+                    style={{ display: 'inline-flex', gap: 10, alignItems: 'center', flexShrink: 0 }}
+                  >
+                    <span className="sp-pubd">
+                      {replyByPositionId.has(p.id) ? "manifold answered" : "awaiting devil's advocate"}
+                    </span>
+                    <button className="sp-mini" onClick={() => void promoteDraft(p.id)}>
+                      Publish now
+                    </button>
+                  </span>
+                </div>
+                <ManifoldReplyCard reply={replyByPositionId.get(p.id) ?? null} />
               </div>
             ))}
           </div>
@@ -295,9 +308,12 @@ export function PositionDeskView() {
           </div>
           <div className="sp-pubs">
             {published.map((p) => (
-              <div className="sp-pub" key={p.id}>
-                <span className="sp-pubt">{p.title}</span>
-                <span className="sp-pubd">{shortDate(p.publishedAt)}</span>
+              <div key={p.id}>
+                <div className="sp-pub">
+                  <span className="sp-pubt">{p.title}</span>
+                  <span className="sp-pubd">{shortDate(p.publishedAt)}</span>
+                </div>
+                <ManifoldReplyCard reply={replyByPositionId.get(p.id) ?? null} />
               </div>
             ))}
           </div>
@@ -307,6 +323,24 @@ export function PositionDeskView() {
           Nothing published yet. The first column is the hardest and the best.
         </div>
       )}
+    </div>
+  );
+}
+
+/** manifold's cited counter-argument for one column. Renders nothing until
+ * the devils-advocate pass has written a row for this position; when it has,
+ * the argument reads first and the shared <Citations> marker opens the source
+ * sheet like every other manifold claim in the cockpit. */
+function ManifoldReplyCard({ reply }: { reply: ManifoldReply | null }) {
+  if (!reply) return null;
+  return (
+    <div className="sp-reply">
+      <div className="sp-reply-hd">
+        <span className="sp-reply-kicker">manifold · devil's advocate</span>
+        <Citations ids={reply.itemIds} label={`manifold's pushback on “${reply.title}”`} />
+      </div>
+      <h4 className="sp-reply-title">{reply.title}</h4>
+      <p className="sp-reply-body">{reply.body}</p>
     </div>
   );
 }

@@ -226,6 +226,7 @@ vi.mock('../src/data/dataLayer', () => ({
   getThemes: vi.fn(async () => fx.themes),
   getThemeLinks: vi.fn(async () => fx.themeLinks),
   getPositions: vi.fn(async () => fx.positions),
+  getManifoldReplies: vi.fn(async () => []),
   getQueuedOutbox: vi.fn(async (): Promise<OutboxItem[]> => []),
   queueOutbox: vi.fn(
     async (
