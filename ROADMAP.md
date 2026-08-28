@@ -1,9 +1,19 @@
 # ROADMAP
 
-Last updated: 2026-08-10
+Last updated: 2026-08-27
 
 Tag legend: [HU] human-owned, [AI] authored from the codebase, [INFERRED]
 assistant default, [GAP] unresolved question for the human.
+
+## Next session
+
+Merge PR feat/server-side-ingestion into main
+(https://github.com/snowfranco/Superlearn/pull/new/feat/server-side-ingestion),
+then in the Actions tab manually dispatch "manifold feed ingest" on main
+to confirm the cron path runs end-to-end on the fresh runner (no local
+.env fallbacks). Expect ~30s, 8/10 feeds ok, report uploaded as
+manifold-ingest-report-<run_id>. If green, the every-3-hour cron takes
+over automatically; if red, read the uploaded report and adjust.
 
 ## Status Board
 

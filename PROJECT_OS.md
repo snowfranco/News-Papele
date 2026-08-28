@@ -43,10 +43,17 @@ and unreachable backend are tracked separately and surfaced as calm banners;
 reads fall back to empty values; the Edition falls back to a client-built
 seed edition from live feed fetches (src/lib/seed.ts, src/data/dataLayer.ts).
 
-[AI] Feed ingestion: a three-proxy fallback chain (rss2json, allorigins,
-corsproxy) fetches RSS/Atom, normalises dates, and upserts into
-reading_items so manifold has a corpus (src/lib/feeds.ts,
-src/data/dataLayer.ts upsertFeedItems).
+[AI] Feed ingestion: server-side on a 3-hour GitHub Actions cron
+(.github/workflows/manifold-ingest.yml, manifold/src/ingest.ts). Node
+fetches every enabled feed directly (no CORS proxy needed), parses
+RSS/Atom with a small tolerant regex core, and upserts through the same
+idempotent /reading_items?on_conflict=id call the app uses
+(src/data/dataLayer.ts upsertFeedItems). The stableItemId hash is shared
+between app and ingester via src/lib/stable-id.ts so both sides produce
+identical ids for the same link. The browser's proxy-based refresh
+(src/lib/feeds.ts) still exists but every proxy in it revoked free-tier
+access in 2026-08 (see PARKING_LOT); the Feeds tab now stays fresh from
+the server ingest, not the button.
 
 [AI] Onboarding is AI-assisted: a direct in-app Claude call proposes sources,
 each feed is probe-validated through the proxy chain before saving, and
@@ -109,6 +116,38 @@ feed fetches are best-effort by design (src/lib/feeds.ts).
 cites a file or is tagged. Adopted from the build prompts' constraints.
 
 ## Decisions Log (newest first)
+
+### [2026-08-27] [HU] Feed ingestion moves server-side rather than to a keyed proxy
+Context: all three anonymous CORS proxies the browser-side refresh chain
+depends on (rss2json 422, allorigins 522, corsproxy.io 403) revoked free-
+tier access in 2026-08 and the client-side chain has been silently broken
+for weeks. Options: (a) sign up for keyed tiers of the same proxies, (b)
+swap in another anonymous proxy, (c) move ingestion server-side.
+Decision: (c). Node has no CORS to appease and no third-party dependency
+in the path; a keyed or replacement proxy trades one revocable free tier
+for another.
+Consequence: manifold/src/ingest.ts fetches feeds on a 3-hour cron
+(.github/workflows/manifold-ingest.yml), shared stableItemId hash lives
+at src/lib/stable-id.ts so app and server produce identical dedup ids,
+and the client Refresh button stays inert-but-harmless. Left as a
+follow-up in PARKING_LOT.
+
+### [2026-08-27] [HU] Scheduled manifold edition runs on a subscription OAuth token, not an API key
+Context: the scheduled edition job had no working model transport for
+weeks (ANTHROPIC_API_KEY was never set, so makeClaude fell back to the
+`claude` CLI, which the runner did not install; every real run since
+2026-08-16 died with `spawn claude ENOENT`). Options: (a) set the API
+key and pay per-token, (b) install the CLI on the runner and
+authenticate with a subscription OAuth token from `claude setup-token`.
+Decision: (b). Same transport already worked locally, no per-token
+billing, and manifold's editorial pass is a fixed 2x/week workload that
+fits within a Pro/Max subscription.
+Consequence: .github/workflows/manifold-edition.yml installs
+@anthropic-ai/claude-code on the runner and passes
+CLAUDE_CODE_OAUTH_TOKEN instead of ANTHROPIC_API_KEY. The API path
+remains available (setting ANTHROPIC_API_KEY switches transports
+automatically) but is not the default. Token renews annually via
+`claude setup-token`.
 
 ### [2026-08-10] [AI] Outbox payload keys are camelCase
 Context: the Feeds tab brief sketched snake_case payload keys (item_id,
