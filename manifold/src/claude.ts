@@ -7,12 +7,14 @@
 // caller (docs/adr/0001-manifold-runtime.md, the auth section).
 //
 // Two transports today, one interface:
-//   1. ANTHROPIC_API_KEY set: direct Messages API call. This is the BYOK
-//      path the scheduled runtime always uses (GitHub Actions injects the
-//      key from repo secrets; there is no `claude` CLI on the runner).
-//   2. Otherwise: the local `claude` CLI in print mode, a convenience for
-//      local dev on a machine with Claude Code auth. No other transport, no
-//      agent loop.
+//   1. ANTHROPIC_API_KEY set: direct Messages API call, metered API billing.
+//   2. Otherwise: the `claude` CLI in print mode. This is the path the
+//      scheduled runtime uses: the workflow installs the CLI on the runner
+//      and authenticates it with a subscription OAuth token
+//      (CLAUDE_CODE_OAUTH_TOKEN, from `claude setup-token`), so runs draw on
+//      the subscription rather than a metered key. Same path serves local dev
+//      on a machine already logged into Claude Code. No other transport, no
+//      agent loop. See .github/workflows/manifold-edition.yml.
 import { execFile } from 'node:child_process';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';

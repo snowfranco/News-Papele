@@ -1,6 +1,6 @@
 # PARKING_LOT
 
-Last updated: 2026-08-10
+Last updated: 2026-08-27
 
 Deferred features, known rough edges, and open questions. Durable decisions
 live in PROJECT_OS.md; phase status lives in ROADMAP.md.
@@ -41,6 +41,13 @@ live in PROJECT_OS.md; phase status lives in ROADMAP.md.
 - rss2json runs with an empty api_key; the proxy chain is best-effort and
   some real feeds intermittently validate as unreachable during onboarding
   (src/lib/feeds.ts).
+- Ingestion is demand-driven, not scheduled: reading_items refresh only on
+  app boot and manual refresh (src/state/AppStore.tsx refreshFeeds,
+  src/data/dataLayer.ts upsertFeedItems), so manifold's corpus is only as
+  fresh as the last browser session. Editions do not starve (the window
+  still held 120 items on 2026-08-27), but a long idle stretch reads a stale
+  corpus. Follow-up: port the fetch+upsert to a Node step and schedule it
+  server-side (fetchFeed in src/lib/feeds.ts is proxy-based and portable).
 - Legacy stores linger by design until confidently retired: the user_feeds
   table and la-* localStorage keys feed the one-time migration
   (src/lib/migrate.ts).
