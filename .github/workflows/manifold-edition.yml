@@ -56,12 +56,25 @@ jobs:
             echo "proceed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # The editorial pass calls the model through the `claude` CLI transport
+      # (manifold/src/claude.ts): install it on the runner and authenticate it
+      # with a subscription OAuth token, not a metered API key. Generate the
+      # token once with `claude setup-token` (Pro/Max, valid one year) and store
+      # it as the CLAUDE_CODE_OAUTH_TOKEN repository secret. Installed only on
+      # the proceeding DST candidate, so skipped runs stay fast.
+      - name: install the Claude Code CLI (subscription transport)
+        if: ${{ steps.gate.outputs.proceed == 'true' }}
+        run: npm install -g @anthropic-ai/claude-code
+
       - name: run the editorial pass
         if: ${{ steps.gate.outputs.proceed == 'true' }}
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # No ANTHROPIC_API_KEY: an unset key makes makeClaude fall back to the
+          # `claude` CLI, which this token authenticates. Setting an API key here
+          # would silently switch the pass onto metered API billing instead.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           MANIFOLD_MODEL: ${{ vars.MANIFOLD_MODEL }}
         run: npm run manifold:edition
 
