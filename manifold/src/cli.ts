@@ -1,11 +1,15 @@
-// manifold CLI. Two commands, both runnable by the operator by hand and by
+// manifold CLI. Three commands, all runnable by the operator by hand and by
 // the scheduled GitHub Actions workflows:
 //   tsx manifold/src/cli.ts edition [--dry-run] [--model <id>] [--max-attempts N]
 //   tsx manifold/src/cli.ts outbox  [--dry-run]
+//   tsx manifold/src/cli.ts ingest  [--dry-run]
 // (or the npm scripts: manifold:edition, manifold:edition:dry, manifold:sweep,
-// manifold:sweep:dry). Exit codes: 0 success, 1 gate rejection or processing
-// failure, 2 usage or configuration error.
-import { loadConfig } from './env.ts';
+// manifold:sweep:dry, manifold:ingest, manifold:ingest:dry). Exit codes: 0
+// success, 1 gate rejection or processing failure, 2 usage or configuration
+// error.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { AGENT_ROOT, loadConfig } from './env.ts';
 import { makeSupabase } from './supabase.ts';
 import { makeClaude } from './claude.ts';
 import { fetchPassInputs, fetchQueuedOutbox, viableItems } from './inputs.ts';
@@ -13,6 +17,7 @@ import { runEditorialPass } from './run.ts';
 import { writePass } from './writer.ts';
 import { writeRunReport } from './report.ts';
 import { processOutbox } from './outbox.ts';
+import { formatIngestReport, runIngestion } from './ingest.ts';
 
 function flag(args: string[], name: string): boolean {
   return args.includes(name);
@@ -165,14 +170,58 @@ async function outboxCommand(args: string[]): Promise<number> {
   return failures > 0 ? 1 : 0;
 }
 
+async function ingestCommand(args: string[]): Promise<number> {
+  const config = loadConfig();
+  const dryRun = flag(args, '--dry-run');
+  const sb = makeSupabase(config);
+  if (config.anonFallback) {
+    console.warn(
+      'manifold: running on the anon key (SUPABASE_SERVICE_ROLE_KEY unset). Works while RLS is allow-all; set the service key for anything real.',
+    );
+  }
+
+  console.log(`manifold: ingesting feeds from ${config.supabaseUrl} (tenant ${config.tenant}) ...`);
+  const report = await runIngestion(sb, config, dryRun);
+  console.log(
+    dryRun
+      ? `manifold: dry run, ${report.itemsFetched} items would be upserted from ${report.feedsOk}/${report.feedsAttempted} feeds`
+      : `manifold: ${report.itemsUpserted} items upserted from ${report.feedsOk}/${report.feedsAttempted} feeds`,
+  );
+  for (const f of report.perFeed) {
+    if (f.error) console.error(`manifold: [FAIL] ${f.feedName}: ${f.error}`);
+    else console.log(`manifold: [ok]   ${f.feedName}: fetched ${f.fetched}, upserted ${f.upserted}${dryRun ? ' (dry run)' : ''}`);
+  }
+
+  const REPORT_DIR = join(AGENT_ROOT, 'reports');
+  mkdirSync(REPORT_DIR, { recursive: true });
+  const date = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Toronto',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const path = join(REPORT_DIR, `${date}-ingest${dryRun ? '-dry-run' : ''}.md`);
+  writeFileSync(path, formatIngestReport(report, dryRun));
+  console.log(`manifold: run report at ${path}`);
+
+  // A run with zero enabled feeds is a config gap, not an ingestion failure:
+  // exit 0 with the note above. A run where every attempted feed failed IS
+  // an ingestion failure and should page the operator.
+  if (report.feedsAttempted > 0 && report.feedsOk === 0) return 1;
+  return 0;
+}
+
 const [, , command, ...rest] = process.argv;
 
 try {
   let code: number;
   if (command === 'edition') code = await editionCommand(rest);
   else if (command === 'outbox') code = await outboxCommand(rest);
+  else if (command === 'ingest') code = await ingestCommand(rest);
   else {
-    console.error('usage: tsx manifold/src/cli.ts <edition|outbox> [--dry-run] [--model <id>] [--max-attempts N]');
+    console.error(
+      'usage: tsx manifold/src/cli.ts <edition|outbox|ingest> [--dry-run] [--model <id>] [--max-attempts N]',
+    );
     code = 2;
   }
   process.exit(code);

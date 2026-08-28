@@ -34,14 +34,10 @@ export function shortDate(iso: string | null): string {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 
-/** Deterministic id for feed articles so upserts dedupe across refreshes. */
-export function stableItemId(link: string): string {
-  let hash = 5381;
-  for (let i = 0; i < link.length; i++) {
-    hash = (hash * 33) ^ link.charCodeAt(i);
-  }
-  return `feed-${(hash >>> 0).toString(36)}`;
-}
+// stableItemId lives in ./stable-id so manifold (Node, no DOM) can share the
+// exact same hash: server-side ingest and browser-side refresh MUST produce
+// identical ids for the same link, or dedup falls apart.
+export { stableItemId } from './stable-id';
 
 /** Discipline colors for the theme map. Known disciplines keep the
  * broadsheet palette; unknown ones get a stable assignment from it. */

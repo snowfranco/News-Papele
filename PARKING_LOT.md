@@ -41,13 +41,18 @@ live in PROJECT_OS.md; phase status lives in ROADMAP.md.
 - rss2json runs with an empty api_key; the proxy chain is best-effort and
   some real feeds intermittently validate as unreachable during onboarding
   (src/lib/feeds.ts).
-- Ingestion is demand-driven, not scheduled: reading_items refresh only on
-  app boot and manual refresh (src/state/AppStore.tsx refreshFeeds,
-  src/data/dataLayer.ts upsertFeedItems), so manifold's corpus is only as
-  fresh as the last browser session. Editions do not starve (the window
-  still held 120 items on 2026-08-27), but a long idle stretch reads a stale
-  corpus. Follow-up: port the fetch+upsert to a Node step and schedule it
-  server-side (fetchFeed in src/lib/feeds.ts is proxy-based and portable).
+- Client-side feed refresh is broken and left silent: the three anonymous
+  CORS proxies (rss2json 422, allorigins 522, corsproxy.io 403) all revoked
+  free-tier access in 2026-08, and refreshFeeds swallows the rejection with
+  Promise.allSettled and no console error, so the Refresh button appears to
+  do nothing (src/state/AppStore.tsx, src/lib/feeds.ts). Not urgent: the new
+  server-side ingester (manifold/src/ingest.ts) writes fresh items every 3
+  hours regardless, and the Feeds tab pulls those on load. Follow-up: either
+  point the button at db.getReadingItems() (server-refreshed corpus) or hide
+  it.
+- Two feeds in context are stale: ChatPRD returns HTTP 404 and "AI blew my
+  mind" points at an HTML page, not a feed. Server-side ingest logs both as
+  failures every run; a browser-side edit of context.sources.feeds fixes it.
 - Legacy stores linger by design until confidently retired: the user_feeds
   table and la-* localStorage keys feed the one-time migration
   (src/lib/migrate.ts).
